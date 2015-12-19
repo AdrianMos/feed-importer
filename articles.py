@@ -12,6 +12,7 @@ import collections
 import urllib.request
 import sys
 import pdb
+import logging
 from _ast import Try
 
     
@@ -33,14 +34,15 @@ class Articles(object):
         
         
         # Check the folders availability for this client. Create the folder structure if necessary.
-        clientFolder = os.getcwd() + "\\" + self.code+"\\out";
+        clientFolder = os.path.join(os.getcwd(), self.code, "out");
         if not os.path.isdir(clientFolder):
             print("Folderul pentru acest cod nu exista, se va crea automat: " + clientFolder)
             
             try:
                 os.makedirs(clientFolder)
             except OSError as ex:
-                sys.exit("Nu se paote crea folderul pentru acest cod: " + ex.reason)
+                sys.exit("Nu se poate crea folderul pentru acest cod: " + ex.reason)
+                logging.error("Articlesonstructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
                 raise
             
              
@@ -97,7 +99,8 @@ class Articles(object):
             #print("#path" + imgSavePath1 + " #orig path:" + imgUrl)
         
         except OSError as ex:
-            print("Eroare salvare fisier: " + imgSavePath1 + " si/sau " + imgSavePath2 +"\n   motiv:"+ ex.reason)     
+            print("Eroare salvare fisier: " + imgSavePath1 + " si/sau " + imgSavePath2 +"\n   motiv:"+ ex.reason)  
+            logging.error("DownloadAndSaveImage : eroare salvare fisier: " + imgSavePath1 + " si/sau " + imgSavePath2 +"\n   motiv:"+ ex.reason)   
         
        # except IOError as (errno, strerror):
        #      print ("I/O error({0}): {1}" + errno + strerror)
@@ -106,13 +109,12 @@ class Articles(object):
         #    print("Eroare salvare fisier: " + imgSavePath1 + " si/sau " + imgSavePath2  +"\n   motiv:"+ ex.reason)   
             
         except urllib.error.HTTPError as ex:
-            print ("Unexpected error:",  ex.code)
+            print ("Unexpected error:",  ex.reason)
+            logging.error("DownloadAndSaveImage : " + ex.reason)
       
         except urllib.error.URLError as ex:
             print("Eroare download: " + imgUrl + "\n  motiv: " + ex.reason + " ++" + str(sys.exc_info()[0]))
-
-      
-     
+            logging.error("DownloadAndSaveImage : nu se poate downloada <" + imgUrl + "> motiv: " + ex.reason + " ++" + str(sys.exc_info()[0]))   
             raise
     
     
@@ -166,11 +168,13 @@ class Articles(object):
                     # for generating the small image
                     try:
                         if imgCounter==0:
-                            self.DownloadAndSaveImage(imgUrl, self.paths.allImagesFolder + imgNameNew, self.paths.mainImagesFolder + imgNameNew) 
+                            self.DownloadAndSaveImage(imgUrl, os.path.join(self.paths.allImagesFolder, imgNameNew), os.path.join(self.paths.mainImagesFolder,imgNameNew)) 
                         else:
-                            self.DownloadAndSaveImage(imgUrl, self.paths.allImagesFolder + imgNameNew) 
+                            self.DownloadAndSaveImage(imgUrl, os.path.join(self.paths.allImagesFolder, imgNameNew)) 
                     except:
-                        print ("\nEROARE descarcare imagine pentru articolul: ", art.title)
+                        e = sys.exc_info()[0]
+                        print ("\nEROARE descarcare imagine pentru articolul: ", art.title, ' @ ', imgNameNew, "@", imgUrl, " eroare:", e)
+                        logging.error('articles: articol <' + art.title + '> : eroare descarcare imagine <' + imgUrl + '> : mesaj eroare : ' + e)
                         
                     sys.stdout.write(".")
                     sys.stdout.flush()
@@ -410,6 +414,7 @@ class Articles(object):
                 return (item[1], item[2])
                
         print("      * categorie necunoscuta:" + categorie + ". Articol neclasificat. Denumire: " + article.title)  
+        logging.warning("ComputeCategory: categorie necunoscuta: <" + categorie + ">. Articol neclasificat: " + article.title)
         return ("Neclasificate", "")
       
     def ComputeImages(self, article):
@@ -461,6 +466,7 @@ class NANArticles(Articles):
     
     def DownloadFeed(self):
     
+        logging.debug("import imaginile")
         print("*** Descarcare feed NAN...")
         response = urllib.request.urlopen('http://www.importatorarticolecopii.ro/feeds/general_feed.php')
         
@@ -764,6 +770,11 @@ class HaiducelArticles(Articles):
          '''
          #with open('haiducel/feedHaiducel.csv', 'rt', encoding="latin1") as csvfile:
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
+         
+         if (not os.path.isfile(self.paths.feedFileNamePath)):
+             sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
+         
+         
          with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
              
              reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')

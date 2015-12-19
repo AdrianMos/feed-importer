@@ -5,6 +5,8 @@ Created on 26.04.2014
 '''
 import os.path
 import sys
+import logging
+from _stat import filemode
 #add the current folder to the python paths
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -75,6 +77,10 @@ def main():
                 
         print("\n*** Articole de tipul " + supplierFeed.__class__.__name__ + " ***")
         
+        # Configure the error log file.
+        logging.basicConfig(filename=os.path.join(supplierFeed.code, 'erori ' + supplierFeed.code + '.log'),
+                            level=logging.INFO,filemode='w',
+                            format='%(asctime)s     %(message)s')
         
         userInput=""
         while (userInput!="y" and userInput!="n"):
@@ -132,6 +138,7 @@ def main():
             
     except Exception as ex:
         print("\n\n Eroare: " + repr(ex) + "\n")
+        logging.error("main: " + repr(ex))
       
    
     userInput = input('\nApasati enter pentru iesire.\n>> ')
