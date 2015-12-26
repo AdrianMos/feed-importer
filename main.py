@@ -26,7 +26,7 @@ def main():
     print("*******************************************")
     print("*** Actualizare date magazinul Haiducel ***")
     print("*******************************************")
-    print("Adrian Mos, V 2.7, 11.10.2015\n")
+    print("Adrian Mos, V 2.9, 27.12.2015\n")
     
     
     try:
@@ -47,14 +47,10 @@ def main():
                 sys.exit("Program terminat.")
                 break
             elif userInput=="2":
-                #supplierPaths = PathBuilder("NAN")
                 supplierFeed = NANArticles("NAN")    
-                #supplierCode = "NAN"   
                 break
             elif userInput=="3":
-                #supplierPaths = PathBuilder("HDRE")
                 supplierFeed = HDREArticles("HDRE")
-                #supplierCode = "HDRE"
                 break
             elif userInput=="4":
                 supplierFeed = BEBArticles("BEB")
@@ -90,9 +86,9 @@ def main():
         
         
         print("\n*** Import date din feed " + supplierFeed.code)
-        supplierFeed.Import()
-        supplierFeed.Convert()
-        print("    Articole importate: "+ str(supplierFeed.articleList.__len__()))
+        eroriImport = supplierFeed.Import()     
+        supplierFeed.ConvertToOurFormat()
+        print("    Articole importate: "+ str(supplierFeed.articleList.__len__()) + ". Erori: " + str(eroriImport))
         
         supplierFeed.RemoveCrapArticles()
         print("    Articole importate, dupa eliminare: "+ str(supplierFeed.articleList.__len__()))
@@ -132,6 +128,9 @@ def main():
         print("    Articole ce nu mai exista in feed: " + str(articlesRemoved.articleList.__len__()))
         export1.ExportArticlesForDeletion (articlesRemoved, filenameArticlesToRemove)
         
+        if eroriImport > 0:
+            print("\n\n***    Au fost gasite "+ str(eroriImport) + " ERORI in feed. Exista articole neimportate. ANUNTATI distribuitorul. Detalii in log.")
+        
         userInput = input('\nDescarc imaginile pentru articolele noi? y/n:\n>> ')
         if userInput.lower()=="y":
             articlesNew.DownloadImages();
@@ -144,32 +143,6 @@ def main():
     userInput = input('\nApasati enter pentru iesire.\n>> ')
     print("\n*** Program terminat ***")
     
-    
-    
-    #for art in articlesNewNAN.articleList:
-    #    print(art.id, art.title)
-        
-    #for art in updatedArticles.articleList:
-    #print(art)
-    #for art in articlesRemovedNAN.articleList:
-    #    print(art.id, art.title)
-    
-    #for art in updatedArticles.articleList:
-     #   print (art.imagesNew)
-    '''
-    
-    for art in existingArticlesNAN.articleList:
-        try:
-            print("Supplier: *" + art.supplier +  "*")
-        except:
-            print("!!! Cannot display data for: " + art.id)
-    ''' 
-    
-    #csv.SaveNewArticles(newFeed, existingData, saveTitle=True, saveImages=True, saveDistribuitor=True)
-    
-    #compareArticles 
-    #  -> new articles - full description
-    #  -> updated articles - only updated fields
     
     
     

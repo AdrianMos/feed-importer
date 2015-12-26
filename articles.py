@@ -1,10 +1,12 @@
 '''
 Created on 26.04.2014
 
-@author: adrian
+@author: adrian mos
 '''
 from article import Article
 from pathbuilder import PathBuilder
+from descriptionprocessor import DescriptionProcessor
+
 import codecs
 import csv
 import os
@@ -14,8 +16,11 @@ import sys
 import pdb
 import logging
 from _ast import Try
+from bs4 import BeautifulSoup, NavigableString
+import bleach
+import re
 
-    
+
 class Articles(object):
     '''
     classdocs
@@ -42,7 +47,7 @@ class Articles(object):
                 os.makedirs(clientFolder)
             except OSError as ex:
                 sys.exit("Nu se poate crea folderul pentru acest cod: " + ex.reason)
-                logging.error("Articlesonstructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
+                logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
                 raise
             
              
@@ -193,6 +198,7 @@ class Articles(object):
          '''
          print ("*** Functionalitatea de import nu a fost implementata.")
          
+         return -1
          
     def Add(self, id, title, price, available, category, supplier):
            
@@ -237,6 +243,7 @@ class Articles(object):
         :param article: article used for computing.
         '''
         return "Active"
+           
     
     def ComputeCategory(self, article):
         '''
@@ -249,151 +256,172 @@ class Articles(object):
         second and third elements are the new Category and Subcategory.
         '''
         
-        map = [["rucioare copii",               "CARUCIOARE",          "2 in 1"],
-			   ["crucioare|crucioare multifuncionale 2 in 1",                     "CARUCIOARE",          "2 in 1"],
-               ["rucioare pentru copii",        "CARUCIOARE",          "2 in 1"],
-               ["rucioare cu landou",           "CARUCIOARE",          "3 in 1"],
-               ["rucioare 3 in 1",              "CARUCIOARE",          "3 in 1"],
-               ["rucioare",                     "CARUCIOARE",          "2 in 1"],
+        map = [["rucioare copii",               "_CARUCIOARE",          "2 in 1"],
+			   ["crucioare|crucioare multifuncionale 2 in 1",                     "_CARUCIOARE",          "2 in 1"],
+               ["rucioare pentru copii",        "_CARUCIOARE",          "2 in 1"],
+               ["rucioare cu landou",           "_CARUCIOARE",          "3 in 1"],
+               ["rucioare 3 in 1",              "_CARUCIOARE",          "3 in 1"],
+               ["rucioare",                     "_CARUCIOARE",          "2 in 1"],
                           
                
-               ["cosulete auto",                "Cosulete AUTO",       ""],
-               ["scaun - cos auto",             "Cosulete AUTO",       ""],
-               ["cos - auto",                   "Cosulete AUTO",       ""],        
-               ["scaun auto",                   "Scaune AUTO",         ""],
+               ["cosulete auto",                "_Cosulete AUTO",       ""],
+               ["scaun - cos auto",             "_Cosulete AUTO",       ""],
+               ["cos - auto",                   "_Cosulete AUTO",       ""],        
+               ["scaun auto",                   "_Scaune AUTO",         ""],
                       
-               ["inaltatoare auto",             "Inaltatoare AUTO",    ""],
-               ["inaltator auto",               "Inaltatoare AUTO",    ""],
+               ["inaltatoare auto",             "_Inaltatoare AUTO",    ""],
+               ["inaltator auto",               "_Inaltatoare AUTO",    ""],
                
-               ["marsupii",                     "PLIMBARE COPII",    "Marsupii, portbebe"],
-               ["ham de siguranta",             "PLIMBARE COPII",    "Marsupii, portbebe"],
-               ["ham pentru copii",             "PLIMBARE COPII",    "Marsupii, portbebe"],
-               ["portbebe",                     "PLIMBARE COPII",    "Marsupii, portbebe"],
+               ["marsupii",                     "_PLIMBARE COPII",    "Marsupii, portbebe"],
+               ["ham de siguranta",             "_PLIMBARE COPII",    "Marsupii, portbebe"],
+               ["ham pentru copii",             "_PLIMBARE COPII",    "Marsupii, portbebe"],
+               ["portbebe",                     "_PLIMBARE COPII",    "Marsupii, portbebe"],
                
                                
-               ["scaune auto",                  "Scaune AUTO",         ""],
-               ["scaune de masa",               "Scaune de MASA",      ""],
-               ["scaun de masa",                "Scaune de MASA",      ""],
-               ["scaun masa",                   "Scaune de MASA",      ""],
+               ["scaune auto",                  "_Scaune AUTO",         ""],
+               ["scaune de masa",               "_Scaune de MASA",      ""],
+               ["scaun de masa",                "_Scaune de MASA",      ""],
+               ["scaun masa",                   "_Scaune de MASA",      ""],
                 
-               ["mobiliere camere copii",       "CAMERA copilului",    "Mobilier"],
-               ["fotolii pentru copii",         "CAMERA copilului",    "Mobilier"],
-               ["fotolii din burete",           "CAMERA copilului",    "Mobilier"],
-               ["mobilier copii",               "CAMERA copilului",    "Mobilier"],
-               ["bucatarii si accesorii",       "CAMERA copilului",    "Mobilier"],
-               ["bucatarii din lemn pentru copii", "CAMERA copilului",    "Mobilier"],
+               ["mobiliere camere copii",       "_CAMERA copilului",    "Mobilier"],
+               ["fotolii pentru copii",         "_CAMERA copilului",    "Mobilier"],
+               ["fotolii din burete",           "_CAMERA copilului",    "Mobilier"],
+               ["mobilier copii",               "_CAMERA copilului",    "Mobilier"],
+               ["bucatarii si accesorii",       "_CAMERA copilului",    "Mobilier"],
+               ["bucatarii din lemn pentru copii", "_CAMERA copilului",    "Mobilier"],
                              
               
-               ["lenjerie de pat",              "CAMERA copilului",    "Lenjerie patut"],
-               ["set lenjerie",                 "CAMERA copilului",    "Lenjerie patut"],
-               ["perna",                        "CAMERA copilului",    "Lenjerie patut"], 
-               ["lenjerie",                     "CAMERA copilului",    "Lenjerie patut"], 
-               ["patura",                       "CAMERA copilului",    "Lenjerie patut"],  
-               ["saci de dormit",               "CAMERA copilului",    "Lenjerie patut"],            
-               ["patuturi din lemn",            "CAMERA copilului",    "Patuturi din lemn"],
-               ["patut din lemn",               "CAMERA copilului",    "Patuturi din lemn"],
-               ["patut pliabil",                "CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["pat pliant",                   "CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["pat pliabil",                  "CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["patuturi voiaj si tarcuri",    "CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["patuturi in forma de masina",  "CAMERA copilului",    "Patuturi in forma de masina"],               
-               ["patut",                        "CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["spatii de joaca",              "CAMERA copilului",    "Spatii de joaca"],
-               ["masute si scaune",             "CAMERA copilului",    "Spatii de joaca"],
-               ["centre de activitate",         "CAMERA copilului",    "Spatii de joaca"],
-               ["tarc",                         "CAMERA copilului",    "Spatii de joaca"],
-               ["saritoare",                    "CAMERA copilului",    "Spatii de joaca"],
-               ["paturici",                     "CAMERA copilului",    "Saci dormit si paturici"],
+               ["lenjerie de pat",              "_CAMERA copilului",    "Lenjerie patut"],
+               ["set lenjerie",                 "_CAMERA copilului",    "Lenjerie patut"],
+               ["perna",                        "_CAMERA copilului",    "Lenjerie patut"], 
+               ["lenjerie",                     "_CAMERA copilului",    "Lenjerie patut"], 
+               ["patura",                       "_CAMERA copilului",    "Lenjerie patut"],  
+               ["saci de dormit",               "_CAMERA copilului",    "Lenjerie patut"],  
+               ["sac de dormit",                "_CAMERA copilului",    "Lenjerie patut"],            
+               ["patuturi din lemn",            "_CAMERA copilului",    "Patuturi din lemn"],
+               ["patut din lemn",               "_CAMERA copilului",    "Patuturi din lemn"],
+               ["patut pliabil",                "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
+               ["pat pliant",                   "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
+               ["pat pliabil",                  "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
+               ["patuturi voiaj si tarcuri",    "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
+               ["patuturi in forma de masina",  "_CAMERA copilului",    "Patuturi in forma de masina"],               
+               ["patut",                        "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
+               ["spatii de joaca",              "_CAMERA copilului",    "Spatii de joaca"],
+               ["masute si scaune",             "_CAMERA copilului",    "Spatii de joaca"],
+               ["centre de activitate",         "_CAMERA copilului",    "Spatii de joaca"],
+               ["tarc",                         "_CAMERA copilului",    "Spatii de joaca"],
+               ["saritoare",                    "_CAMERA copilului",    "Spatii de joaca"],
+               ["paturici",                     "_CAMERA copilului",    "Saci dormit si paturici"],
              
                
-               ["comode",                       "CAMERA copilului",    "Mobilier"],
-               ["carusel",                      "CAMERA copilului",    "Carusele"],
-               ["saltele",                      "CAMERA copilului",    "Saltele patut"],
-               ["blat si saltea de infasat",    "CAMERA copilului",    "Saltele infasat"],
-               ["blat de infasat",              "CAMERA copilului",    "Saltele infasat"],
-               ["saltea de infasat",            "CAMERA copilului",    "Saltele infasat"],
+               ["comode",                       "_CAMERA copilului",    "Mobilier"],
+               ["carusel",                      "_CAMERA copilului",    "Carusele"],
+               ["saltele",                      "_CAMERA copilului",    "Saltele patut"],
+               ["saltea",                       "_CAMERA copilului",    "Saltele patut"],
+               ["blat si saltea de infasat",    "_CAMERA copilului",    "Saltele infasat"],
+               ["saltelute de infasat",         "_CAMERA copilului",    "Saltele infasat"],
+               ["blat de infasat",              "_CAMERA copilului",    "Saltele infasat"],
+               ["saltea de infasat",            "_CAMERA copilului",    "Saltele infasat"],
                
-               ["balansoare si leagane",        "BALANSOARE si leagane",  ""],
-               ["balansoar",                    "BALANSOARE si leagane",  ""],
+               ["balansoare si leagane",        "_BALANSOARE si leagane",  ""],
+               ["balansoar",                    "_BALANSOARE si leagane",  ""],
+               ["leagane",                      "_BALANSOARE si leagane",  ""],
                
-               ["incalzitor biberon",           "IGIENA si siguranta",  "Incalzitor si sterilizator"],
-               ["sterilizator",                 "IGIENA si siguranta",  "Incalzitor si sterilizator"],
+               ["incalzitor biberon",           "_IGIENA si siguranta",  "Incalzitor si sterilizator"],
+               ["sterilizator",                 "_IGIENA si siguranta",  "Incalzitor si sterilizator"],
                
-               ["monitoare de respiratie",      "IGIENA si siguranta",  "Interfoane si video"],
-               ["interfoane",                   "IGIENA si siguranta",  "Interoane si video"],
+               ["monitoare de respiratie",      "_IGIENA si siguranta",  "Inlterfoane si video"],
+               ["interfoane",                   "_IGIENA si siguranta",  "Interoane si video"],
                
-               ["igiena",                       "IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["siguranta copilului",          "IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["bariere pentru patuturi",      "IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["set de ingrijire",             "IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["semn de avertizare",           "IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["semne de avertizare",          "IGIENA si siguranta",  "Protectie si ingrijire"],
-               
+               ["igiena",                       "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["siguranta copilului",          "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["bariere pentru patuturi",      "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["set de ingrijire",             "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["semn de avertizare",           "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["semne de avertizare",          "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["aspiratoare nazale",           "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["aspirator nazal",              "_IGIENA si siguranta",  "Protectie si ingrijire"],
+               ["inele gingivale",              "_IGIENA si siguranta",  "Protectie si ingrijire"],              
 
-               ["pompe de san",                 "IGIENA si siguranta",  "Nutritie"],
-               ["pompa de san",                 "IGIENA si siguranta",  "Nutritie"],
-               ["pompe pentru san",             "IGIENA si siguranta",  "Nutritie"],
-               ["recipient stocarea laptelui",  "IGIENA si siguranta",  "Nutritie"],
-               ["recipient stocarea laptelui",  "IGIENA si siguranta",  "Nutritie"],
-               ["biberoane",                    "IGIENA si siguranta",  "Nutritie"],
-               ["bavetica",                     "IGIENA si siguranta",  "Nutritie"],
-               ["robot bucatarie",              "IGIENA si siguranta",  "Nutritie"],
+               ["pompe de san",                 "_IGIENA si siguranta",  "Nutritie"],
+               ["pompa de san",                 "_IGIENA si siguranta",  "Nutritie"],
+               ["pompe pentru san",             "_IGIENA si siguranta",  "Nutritie"],
+               ["pompa san",                    "_IGIENA si siguranta",  "Nutritie"],
+               ["recipient stocarea laptelui",  "_IGIENA si siguranta",  "Nutritie"],
+               ["recipient stocarea laptelui",  "_IGIENA si siguranta",  "Nutritie"],
+               ["biberoane",                    "_IGIENA si siguranta",  "Nutritie"],
+               ["bavetica",                     "_IGIENA si siguranta",  "Nutritie"],
+               ["robot bucatarie",              "_IGIENA si siguranta",  "Nutritie"],
                
-               ["aerosol",                      "IGIENA si siguranta",  "Aerosol si umidificator"],
-               ["aersol",                       "IGIENA si siguranta",  "Aerosol si umidificator"],
-               ["umidificator",                 "IGIENA si siguranta",  "Aerosol si umidificator"],
+               ["aerosol",                      "_IGIENA si siguranta",  "Aerosol si umidificator"],
+               ["aersol",                       "_IGIENA si siguranta",  "Aerosol si umidificator"],
+               ["umidificator",                 "_IGIENA si siguranta",  "Aerosol si umidificator"],
 
-               ["termometr",                    "IGIENA si siguranta",  "Termometre"],
+               ["termometr",                    "_IGIENA si siguranta",  "Termometre"],
                
-               ["articole pentru baie",         "IGIENA si siguranta",  "Baie"],
-               ["cadita",                       "IGIENA si siguranta",  "Baie"],
-               
-               ["cantare electrice",            "IGIENA si siguranta",  "Cantare"],
-               ["cantare pentru copii",         "IGIENA si siguranta",  "Cantare"],
-               
-               ["accesorii ingrijire copii",    "IGIENA si siguranta",  ""],
-                            
-               
-               
-               ["leagane de gradina",           "BALANSOARE si leagane",  ""],
                               
-               ["genti pentru mamici",          "Viitoare MAMICI",  "Genti mamici"],
-               ["geanta carucior",              "Viitoare MAMICI",  "Genti mamici"],
-               ["mmici|geni",                   "Viitoare MAMICI",  "Genti mamici"],
-               ["gentute",                      "Viitoare MAMICI",  "Genti mamici"],
-               ["genti pentru scutece",         "Viitoare MAMICI",  "Genti mamici"],
+               ["articole pentru baie",         "_IGIENA si siguranta",  "Baie"],
+               ["cadita",                       "_IGIENA si siguranta",  "Baie"],
+               ["cadite",                       "_IGIENA si siguranta",  "Baie"],
+               
+               
+               ["cantare elect",                "_IGIENA si siguranta",  "Cantare"],
+               ["cantar elect",                 "_IGIENA si siguranta",  "Cantare"],
+               ["cantare mecanice",             "_IGIENA si siguranta",  "Cantare"],
+               ["cantare pentru copii",         "_IGIENA si siguranta",  "Cantare"],
+               ["cantare copii",                "_IGIENA si siguranta",  "Cantare"],
+               
+               ["accesorii ingrijire copii",    "_IGIENA si siguranta",  ""],
+               ["manichiura si pedichiura bebe","_IGIENA si siguranta",  ""],             
+               
+               
+               ["leagane de gradina",           "_BALANSOARE si leagane",  ""],
+                              
+               ["genti pentru mamici",          "_Viitoare MAMICI",  "Genti mamici"],
+               ["geanta carucior",              "_Viitoare MAMICI",  "Genti mamici"],
+               ["mmici|geni",                   "_Viitoare MAMICI",  "Genti mamici"],
+               ["gentute",                      "_Viitoare MAMICI",  "Genti mamici"],
+               ["genti pentru scutece",         "_Viitoare MAMICI",  "Genti mamici"],
                
                
                
                 
-               ["triciclet",                    "PLIMBARE copii",  "Triciclete si trotinete"],
-               ["trotinet",                     "PLIMBARE copii",  "Triciclete si trotinete"],
-               ["biciclet",                     "PLIMBARE copii",  "Biciclete"],
-               ["masin",                        "PLIMBARE copii",  "Masinute"],
-               ["tractoare",                    "PLIMBARE copii",  "Masinute"],
-               ["tractore cu pedale",           "PLIMBARE copii",  "Masinute"],
-               ["vehicule pentru copii",        "PLIMBARE copii",  "Masinute"],
+               ["triciclet",                    "_PLIMBARE copii",  "Triciclete si trotinete"],
+               ["trotinet",                     "_PLIMBARE copii",  "Triciclete si trotinete"],
+               ["biciclet",                     "_PLIMBARE copii",  "Biciclete"],
+               ["masin",                        "_PLIMBARE copii",  "Masinute"],
+               ["tractoare",                    "_PLIMBARE copii",  "Masinute"],
+               ["tractore cu pedale",           "_PLIMBARE copii",  "Masinute"],
+               ["vehicule pentru copii",        "_PLIMBARE copii",  "Masinute"],
                
                
                
-               ["premergatoare",                "PLIMBARE copii",  "Premergatoare"],
-               ["premergator",                  "PLIMBARE copii",  "Premergatoare"],
-               ["saniute",                      "PLIMBARE copii",  "Saniute"],
-               ["sanie",                        "PLIMBARE copii",  "Saniute"],
+               ["premergatoare",                "_PLIMBARE copii",  "Premergatoare"],
+               ["premergator",                  "_PLIMBARE copii",  "Premergatoare"],
+               ["saniute",                      "_PLIMBARE copii",  "Saniute"],
+               ["sanie",                        "_PLIMBARE copii",  "Saniute"],
               
-               ["jocuri",                       "JUCARII si jocuri",  ""],
-               ["jucarii",                      "JUCARII si jocuri",  ""],
-               ["jucrii",                       "JUCARII si jocuri",  ""],
-               ["jeep",                         "JUCARII si jocuri",  ""],
-               ["seturi de constructii",        "JUCARII si jocuri",  ""],
-               ["piste si garaje",              "JUCARII si jocuri",  ""],
-               ["joaca",                        "JUCARII si jocuri",  ""],
-               ["cort",                         "JUCARII si jocuri",  ""],
-               ["papusi",                       "JUCARII si jocuri",  ""],
-               ["trenuri",                      "JUCARII si jocuri",  ""],
-               ["seturi de bile colorate",      "JUCARII si jocuri",  ""],
+               ["jocuri",                       "_JUCARII si jocuri",  ""],
+               ["jucari",                      "_JUCARII si jocuri",  ""],
+               ["jucrii",                       "_JUCARII si jocuri",  ""],
+               ["jeep",                         "_JUCARII si jocuri",  ""],
+               ["seturi de constructii",        "_JUCARII si jocuri",  ""],
+               ["piste si garaje",              "_JUCARII si jocuri",  ""],
+               ["joaca",                        "_JUCARII si jocuri",  ""],
+               ["cort",                         "_JUCARII si jocuri",  ""],
+               ["papusi",                       "_JUCARII si jocuri",  ""],
+               ["trenuri",                      "_JUCARII si jocuri",  ""],
+               ["seturi de bile colorate",      "_JUCARII si jocuri",  ""],
                
-              
+               
+               ["scutece",                      "_DESTERS",            ""],
+               ["olita",                        "_DESTERS",            ""],
+               ["reductor capac wc",            "_DESTERS",            ""],
+               ["suzete",                       "_DESTERS",            ""],
+               ["cana",                         "_DESTERS",            ""],
+               ["lingurite",                    "_DESTERS",            ""],
+               ["servetele",                    "_DESTERS",            ""],
+               
                ]
                  
         
@@ -415,7 +443,7 @@ class Articles(object):
                
         print("      * categorie necunoscuta:" + categorie + ". Articol neclasificat. Denumire: " + article.title)  
         logging.warning("ComputeCategory: categorie necunoscuta: <" + categorie + ">. Articol neclasificat: " + article.title)
-        return ("Neclasificate", "")
+        return ("_Neclasificate", "")
       
     def ComputeImages(self, article):
         '''
@@ -424,23 +452,24 @@ class Articles(object):
         '''
         print("*** Functionalitatea de prelucrare nume imagini nu a fost implementata.")
         pass
+    
         
     def ComputeDescription(self, article):
-        
+        '''
+        Computes the  product description. Removes html format which might destroy the site aspect.
+        :param article: article to be processed
+        '''
         # Remove the product name from description
-        newDescription = article.description.replace(article.title, "")
-        
+        description = article.description.replace(article.title, "")
+                
         # Replace &lt;b&gt; with <b> and &lt;/b&gt with </b>
         # Remove <b></b> tags with no text contained
-        newDescription = newDescription.replace("&lt;b&gt;","<b>").replace("&lt;/b&gt","</b>").replace("<b></b>","")
-        newDescription = newDescription.replace("<strong>:</strong>", "").replace("<strong> </strong>", "").replace("<strong></strong>", "")
+        #newDescription = newDescription.replace("&lt;b&gt;","<b>").replace("&lt;/b&gt","</b>").replace("<b></b>","")
+        #newDescription = newDescription.replace("<strong>:</strong>", "").replace("<strong> </strong>", "").replace("<strong></strong>", "")
         
-        # Remove all occurences of MyKids, BABY MIX, ....
-        newDescription = newDescription.replace("MyKids","").replace("BABY MIX","")
-        
-        return newDescription
-    
-    def Convert(self):
+        return DescriptionProcessor.CleanDescription(description)    
+       
+    def ConvertToOurFormat(self):
         '''
         Converts all data to our format
         '''
@@ -466,10 +495,8 @@ class NANArticles(Articles):
     
     def DownloadFeed(self):
     
-        logging.debug("import imaginile")
         print("*** Descarcare feed NAN...")
-        response = urllib.request.urlopen('http://www.importatorarticolecopii.ro/feeds/general_feed.php')
-        
+        response = urllib.request.urlopen('http://www.importatorarticolecopii.ro/feeds/general_feed.php')  
         feedData = response.read()
         
         with open(self.paths.feedFileNamePath, 'wb') as textfile:
@@ -498,7 +525,9 @@ class NANArticles(Articles):
                                                   available = row[4],
                                                   category = row[7],
                                                   supplier = "NAN",
-                                                  images = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]])) 
+                                                  images = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]]))
+         return -1
+
 
     def ComputeAvailability(self, article):
         '''
@@ -551,7 +580,6 @@ class BEBArticles(Articles):
         print("*** Descarcare feed BEBEX...")
         # response = urllib.request.urlopen('http://www.bebex.ro/feed/datafeed_produse_general_csv.php')
         response = urllib.request.urlopen('http://www.bebex.ro/datafeed/complete/csv/')
-        
         feedData = response.read()
         
         with open(self.paths.feedFileNamePath, 'wb') as textfile:
@@ -611,7 +639,7 @@ class BEBArticles(Articles):
                                                   supplier = "BEB",
                                                   images = imagesArray))
              
-          
+         return -1
         
         
         
@@ -666,14 +694,14 @@ class HDREArticles(Articles):
     '''
     Handles the BabyDreams artiles (HDRE)
     '''
-    #savePathAllImages = "HDRE/out/imagini/mari/"
-    #savePathMainImages = "HDRE/out/imagini/_de generat imagini mici/"
      
     def DownloadFeed(self):
     
         print("*** Descarcare feed HDRE...")
-        response = urllib.request.urlopen('http://www.babydreams.ro/products.csv')
-        feedData = response.read().decode("utf-8-sig").encode("utf-8")
+        response = urllib.request.urlopen('http://www.kidcity.ro/products_feed_csv.php')           
+        
+        feedData = response.read().decode("cp1252").encode('unicode_escape')
+        feedData = feedData.decode('unicode_escape').encode('ascii', 'ignore')       
               
         with open(self.paths.feedFileNamePath, 'wb') as textfile:
             textfile.write(feedData)
@@ -684,21 +712,23 @@ class HDREArticles(Articles):
     def Import(self):
         '''
         Import articles from csv file
-        '''    
+        '''  
+        numErrors = 0
+          
         print ("    Fisier de import: " + self.paths.feedFileNamePath)
         with open(self.paths.feedFileNamePath, 'rt') as csvfile:
-             #reader = csv.reader(csvfile, delimiter='|')
-             reader = csv.DictReader(csvfile, delimiter='|', quotechar='"')
+            #reader = csv.reader(csvfile, delimiter='|')
+            reader = csv.DictReader(csvfile, delimiter='|', quotechar='"')
              
-             for row in reader:
-                           
-                 pret = str(row["pret_recomandat"]).replace(".", "").replace(",", ".")
-                 pretPromo = str(row["pret_promo"]).replace(".", "").replace(",", ".")
-                 greutate = str(row["greutate_kg"]).replace(".", "").replace(",", ".")
-                  
-                 images = [x.strip() for x in row["imagini"].split(',')]
-                                                 
-                 self.articleList.append( Article(id = row["cod"],
+            for index, row in enumerate(reader):                 
+                try:
+                    pret = str(row["pret_recomandat"]).replace(".", "").replace(",", ".")
+                    pretPromo = str(row["pret_promo"]).replace(".", "").replace(",", ".")
+                    greutate = str(row["greutate_kg"]).replace(".", "").replace(",", ".")
+                    
+                    images = [x.strip() for x in row["imagini"].split(',')]
+                     
+                    self.articleList.append( Article(id = row["cod"],
                                                   title = row["denumire"],
                                                   price = pret,
                                                   pricePromo = pretPromo,
@@ -708,6 +738,14 @@ class HDREArticles(Articles):
                                                   weight = greutate,
                                                   supplier = "HDRE",
                                                   images = images)) 
+                except:
+                    logging.error('Import(): Eroare import articol index ' +  str(index) + ' cod (posibil eronat):' + row["cod"])
+                    numErrors = numErrors + 1
+                    continue
+                
+        return numErrors
+            
+            
     
           
            
@@ -772,6 +810,7 @@ class HaiducelArticles(Articles):
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
          
          if (not os.path.isfile(self.paths.feedFileNamePath)):
+             logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' + self.paths.feedFileNamePath)
              sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
          
          
@@ -798,7 +837,7 @@ class HaiducelArticles(Articles):
                                                             row["v_products_images_image_7"], row["v_products_images_image_8"],
                                                             row["v_products_images_image_9"], row["v_products_images_image_10"], 
                                                             row["v_products_images_image_11"],row["v_products_images_image_12"]])) 
-                       
+         return -1          
 
 class BebeBrandsArticles(Articles):
     '''
@@ -869,7 +908,7 @@ class BebeBrandsArticles(Articles):
                   else:
                       print("     * articol ignorat, lipseste modelul (id): ", row["title"])         
                  
-                      
+        return -1            
           
            
     def ComputeAvailability(self, article):
@@ -985,7 +1024,7 @@ class BabyShopsArticles(Articles):
                   else:
                       print("     * articol ignorat, lipseste modelul (id): ", row["Name"])         
                  
-                      
+        return -1             
           
            
     def ComputeAvailability(self, article):
@@ -1047,35 +1086,42 @@ class BabyShopsArticles(Articles):
         second and third elements are the new Category and Subcategory.
         '''
         
-        map = [["camera copilului|accesorii",	 	 				"CAMERA copilului", 	"Saci dormit si paturici"],
-               ["jucrii|covorae de joac",							"CAMERA copilului",  	"Spatii de joaca"],
-               ["ptuuri pliabile",				  					"CAMERA copilului",		"Patuturi voiaj si tarcuri"],
-               ["jucrii|carusele muzicale",		  					"CAMERA copilului",		"Carusele"],
+        map = [["camera copilului|accesorii",	 	 				"_CAMERA copilului", 	"Saci dormit si paturici"],
+               ["jucrii|covorae de joac",							"_CAMERA copilului",  	"Spatii de joaca"],
+               ["ptuuri pliabile",				  					"_CAMERA copilului",		"Patuturi voiaj si tarcuri"],
+               ["jucrii|carusele muzicale",		  					"_CAMERA copilului",		"Carusele"],
                
-               ["crucioare|accesorii carucioare",    				"PLIMBARE COPII",   	"Marsupii, portbebe" ],
-               ["marsupii",    										"PLIMBARE COPII",   	"Marsupii, portbebe" ],
+               ["crucioare|accesorii carucioare",    				"_PLIMBARE COPII",   	"Marsupii, portbebe" ],
+               ["marsupii",    										"_PLIMBARE COPII",   	"Marsupii, portbebe" ],
                
-               ["crucioare|carucioare multifunctionale 3 in 1",		"CARUCIOARE",		  	"3 in 1"],
-               ["crucioare|carucioare nou-nascuti",					"CARUCIOARE",		  	"Sport"],
-               ["crucioare|crucioare sport",						"CARUCIOARE",		  	"Sport"],
-               ["crucioare|crucioare multifuncionale 2 in 1",		"CARUCIOARE",		  	"2 in 1"],
-               ["crucioare|crucioare pentru gemeni",				"CARUCIOARE",		  	"Gemeni"],
+               ["crucioare|carucioare multifunctionale 3 in 1",		"_CARUCIOARE",		  	"3 in 1"],
+               ["crucioare|carucioare nou-nascuti",					"_CARUCIOARE",		  	"Sport"],
+               ["crucioare|crucioare sport",						"_CARUCIOARE",		  	"Sport"],
+               ["crucioare|crucioare multifuncionale 2 in 1",		"_CARUCIOARE",		  	"2 in 1"],
+               ["crucioare|crucioare pentru gemeni",				"_CARUCIOARE",		  	"Gemeni"],
               
-               ["scaune auto",                   					"Scaune AUTO",         ""],
-               ["scaune de mas",                  					"Scaune de MASA",      ""],
+               ["scaune auto",                   					"_Scaune AUTO",         ""],
+               ["scaune de mas",                  					"_Scaune de MASA",      ""],
                
-               ["sanatate si igiena",				  				"IGIENA si siguranta",  ""],
-               ["la mas|",				  							"IGIENA si siguranta",  ""],
-               ["in baie|manusi de baie, halat de baie, prosoape",	"IGIENA si siguranta",  ""],
-               ["in baie|termometre",				  				"IGIENA si siguranta",  ""],
-               ["sigurana bebeluului|",				  				"IGIENA si siguranta",  ""],
+               ["camera copilului|paturici",                        "_CAMERA copilului",    "Lenjerie patut"],  
+               ["camera copilului|lenjerii patuturi",               "_CAMERA copilului",    "Lenjerie patut"],  
+               ["camera copilului|saltelute de infasat",            "_CAMERA copilului",    "Saltele infasat"],
+                
+               ["sanatate si igiena",				  				"_IGIENA si siguranta",  ""],
+               ["la mas|",				  							"_IGIENA si siguranta",  ""],
+               ["in baie|manusi de baie, halat de baie, prosoape",	"_IGIENA si siguranta",  ""],
+               ["in baie|termometre",				  				"_IGIENA si siguranta",  ""],
+               ["sigurana bebeluului|",				  				"_IGIENA si siguranta",  ""],
                
-               ["jucrii|balansoare/leagne",        					"BALANSOARE si leagane",  ""],
-               ["jucrii|",						 					"JUCARII si jocuri",  ""],            
+               ["jucrii|balansoare/leagne",        					"_BALANSOARE si leagane",  ""],
+               ["jucrii|",						 					"_JUCARII si jocuri",  ""],            
                      
-               ["pentru mmici|geni",		  						"Viitoare MAMICI",  "Genti mamici"],
-			   ["pentru mmici",			 	  						"Viitoare MAMICI",  "Diverse"]
-		
+               ["pentru mmici|geni",		  						"_Viitoare MAMICI",  "Genti mamici"],
+			   ["pentru mmici",			 	  						"_Viitoare MAMICI",  "Diverse"],
+		  
+               ["camera copilului|sosetele",                        "_DESTERS",          ""]
+              
+        
                ]
                  
         
@@ -1096,7 +1142,8 @@ class BabyShopsArticles(Articles):
                 return (item[1], item[2])
                
         print("      * categorie necunoscuta:" + categorie + ". Articol neclasificat. Denumire: " + article.title)  
-        return ("Neclasificate", "")
+        logging.warning("BabyShopsArticles: ComputeCategory: categorie necunoscuta:" + categorie + ". Articol neclasificat: " + article.title)  
+        return ("_Neclasificate", "")
      
 class KidsDecorArticles(Articles):
      
@@ -1148,6 +1195,7 @@ class KidsDecorArticles(Articles):
                                                   category = row[0],
                                                   supplier = "HDEC",
                                                   images = [row[7], "", "", "", "", "", "", "", "", "", "", ""]))
+         return -1
 
     def ComputeAvailability(self, article):
         '''
@@ -1261,7 +1309,8 @@ class HubnersArticles(Articles):
                                               images = images)) 
                 else:
                     print("     * articol ignorat, lipseste modelul (id): ", row["title"])         
-                 
+         
+        return -1        
                       
           
            
