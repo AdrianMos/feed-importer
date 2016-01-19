@@ -6,7 +6,7 @@ Created on 26.04.2014
 import os.path
 import sys
 import logging
-from _stat import filemode
+#from _stat import filemode
 #add the current folder to the python paths
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -26,7 +26,7 @@ def main():
     print("*******************************************")
     print("*** Actualizare date magazinul Haiducel ***")
     print("*******************************************")
-    print("Adrian Mos, V 2.9, 27.12.2015\n")
+    print("Adrian Mos, V 3.0, 19.01.2016\n")
     
     
     try:

@@ -763,8 +763,8 @@ class HDREArticles(Articles):
     def ComputeImages(self, article):
         '''
         Convert image names to our format. 
-          original image: http://www.babydreams.ro/fileadmin/img/i-love-you-h138-b-i_.jpg
-          after trimming should be: fileadmin/img/i-love-you-h138-b-i_.jpg
+          original image:             http://www.kidcity.ro/data_files/product_photos/9797/large_1.jpg
+          after conversion should be: fileadmin/img/9797_large_1.jpg
         :param article:
         '''
         #create a new first element that will include the link to small image
@@ -779,13 +779,14 @@ class HDREArticles(Articles):
         	else:
         		path,file=os.path.split(fullPath)
         		extension = fullPath[fullPath.rfind("."):]
+        		lastDirectoryName = fullPath.split('/')[-2]	    
         		
         		#Extract all characters until second underscore.                
         		if i==0:
         			#Path to small image, append an _s
-        			newPath = "fileadmin/img/" + file[:file.rfind(".")] + "_s" + extension
+        			newPath = "fileadmin/img/" + lastDirectoryName + "_" + file[:file.rfind(".")] + "_s" + extension
         		else:
-        			newPath = "fileadmin/img/" + file
+        			newPath = "fileadmin/img/" + lastDirectoryName + "_" + file
         			
         	newImageNames[i] = newPath
         
