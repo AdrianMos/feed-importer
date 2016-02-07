@@ -20,28 +20,39 @@ from pathbuilder import PathBuilder
 import time
 
 
+def AskUserYesOrNo(question):
+    '''
+    Displays the question to the user and waits for a yes or no answer (y/n).
+    '''
+    userInput=""
+    print('')
+    while (userInput!="da" and userInput!="nu"):
+        userInput = input(question + ' da/nu: >> ').lower()
+    return userInput
+
 
 
 def main():
     print("*******************************************")
     print("*** Actualizare date magazinul Haiducel ***")
     print("*******************************************")
-    print("Adrian Mos, V 3.0, 19.01.2016\n")
+    print("Adrian Mos, V 3.1, 06.02.2016\n")
     
     
     try:
         
         while True:
-            print("1. Iesire\n"
-                  "2. Actualizare Nancy (NAN)\n"
-                  "3. Actualizare BabyDreams (HDRE)\n" 
-                  "4. Actualizare Bebex (BEB)\n"
-                  "5. Actualizare BebeBrands (HBBA)\n"
-                  "6. Actualizare BabyShops (HMER)\n"
-                  "7. Actualizare KidsDecor (HDEC) - nu merge, caractere ilegale in feed, feed-nu se descarca\n"
-                  "8. Actualizare Hubners (HHUB)\n"
+            print("Optiuni disponibile:")
+            print("  1. Iesire\n"
+                  "  2. Actualizare Nancy (NAN)\n"
+                  "  3. Actualizare BabyDreams (HDRE)\n" 
+                  "  4. Actualizare Bebex (BEB)\n"
+                  "  5. Actualizare BebeBrands (HBBA)\n"
+                  "  6. Actualizare BabyShops (HMER)\n"
+                  "  7. Actualizare KidsDecor (HDEC) - nu merge, caractere ilegale in feed, feed-nu se descarca\n"
+                  "  8. Actualizare Hubners (HHUB)\n"
                   )
-            userInput = input('>> ')
+            userInput = input('Introduceti numarul optiunii pentru a continua: >> ')
             
             if userInput=="1":
                 sys.exit("Program terminat.")
@@ -68,27 +79,29 @@ def main():
                 supplierFeed = HubnersArticles("HHUB")
                 break
             else:
-                sys.exit("Comanda invalida. Program terminat.")
+                sys.exit("Optiune invalida. Program terminat.")
         
                 
-        print("\n*** Articole de tipul " + supplierFeed.__class__.__name__ + " ***")
+        print("  Procesare articole de tipul " + supplierFeed.__class__.__name__ + '.')
         
         # Configure the error log file.
         logging.basicConfig(filename=os.path.join(supplierFeed.code, 'erori ' + supplierFeed.code + '.log'),
                             level=logging.INFO,filemode='w',
                             format='%(asctime)s     %(message)s')
-        
-        userInput=""
-        while (userInput!="y" and userInput!="n"):
-            userInput = input('Descarc feed nou? y/n:\n>> ').lower()
-            if userInput=="y":
-                supplierFeed.DownloadFeed()
-        
+                  
+        if AskUserYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':    
+            supplierFeed.DownloadFeed()
         
         print("\n*** Import date din feed " + supplierFeed.code)
         eroriImport = supplierFeed.Import()     
         supplierFeed.ConvertToOurFormat()
         print("    Articole importate: "+ str(supplierFeed.articleList.__len__()) + ". Erori: " + str(eroriImport))
+        
+        if supplierFeed.articleList.__len__() < 50:
+            logging.error('ATENTIE: Posibila eroare in datele furnizorului. Exista mai putin de 50 de articole.')
+            if AskUserYesOrNo('    ATENTIE:\n    Posibila eroare in datele furnizorului.\n    Exista mai putin de 50 de articole. Continuati?') == 'nu':    
+                sys.exit("Ati renuntat la procesare.")
+        
         
         supplierFeed.RemoveCrapArticles()
         print("    Articole importate, dupa eliminare: "+ str(supplierFeed.articleList.__len__()))
@@ -100,7 +113,6 @@ def main():
         print("    Articole importate: "+ str(haiducelArticlesFiltered.articleList.__len__()))
         
         
-    
         print("\n************ COMPARARI ************")
         
         print("\n*** Articole existente")
@@ -131,16 +143,15 @@ def main():
         if eroriImport > 0:
             print("\n\n***    Au fost gasite "+ str(eroriImport) + " ERORI in feed. Exista articole neimportate. ANUNTATI distribuitorul. Detalii in log.")
         
-        userInput = input('\nDescarc imaginile pentru articolele noi? y/n:\n>> ')
-        if userInput.lower()=="y":
-            articlesNew.DownloadImages();
+        if AskUserYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
+            articlesNew.DownloadImages();  
             
     except Exception as ex:
         print("\n\n Eroare: " + repr(ex) + "\n")
         logging.error("main: " + repr(ex))
       
    
-    userInput = input('\nApasati enter pentru iesire.\n>> ')
+    userInput = input('\nApasati enter pentru iesire. >> ')
     print("\n*** Program terminat ***")
     
     
