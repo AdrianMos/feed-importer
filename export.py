@@ -48,7 +48,7 @@ class Export(object):
     def ExportAllData(self, articles, filename):
         
         with open(filename, 'wt') as csvfile:
-            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
+            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC, lineterminator='\n')
             #writer.writerow(list(self.header.values()))
             writer.writerow(list(self.header.values()))
            

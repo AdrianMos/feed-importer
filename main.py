@@ -36,7 +36,7 @@ def main():
     print("*******************************************")
     print("*** Actualizare date magazinul Haiducel ***")
     print("*******************************************")
-    print("Adrian Mos, V 3.1, 06.02.2016\n")
+    print("Adrian Mos, V 3.2, 30.05.2016\n")
     
     
     try:
