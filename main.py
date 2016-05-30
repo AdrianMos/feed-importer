@@ -134,6 +134,10 @@ def main():
         #export1.ExportPriceAndAvailability(articlesNew, filenameArticlesNew)
         export1.ExportAllData(articlesNew, filenameArticlesNew)
         
+        print("\n*** Toate articolele din feed transformate in formatul nostru")
+        filenameSupplierFeedOurFormat = supplierFeed.code + "/out/" + supplierFeed.code + ' original ' + time.strftime("%Y-%m-%d") + '.csv'
+        export1.ExportAllData(supplierFeed, filenameSupplierFeedOurFormat)		
+        
         print("\n*** Articole sterse din feed")
         articlesRemoved = Operations.SubstractArticles(haiducelArticlesFiltered, supplierFeed)
         filenameArticlesToRemove = supplierFeed.code + "/out/" + supplierFeed.code + ' articole de sters ' + time.strftime("%Y-%m-%d") + '.csv'
