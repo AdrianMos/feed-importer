@@ -67,7 +67,7 @@ class Export(object):
                 
         print ("    Fisierul cu articole a fost salvat:    " + filename)
 
-    def ExportOriginalData(self, articles, filename):
+    def ExportDataForOnlineshop(self, articles, filename):
             
         with open(filename, 'wt') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC, lineterminator='\n')
@@ -75,15 +75,15 @@ class Export(object):
             
             for a in articles.articleList:
                 
-                row = [a.id, a.title, a.description, a.title, a.description, a.images, 
-                   "", "", "", "", "", "",
-                   "", "", "", "", "", "",
+                row = [a.id, a.title, a.description, a.title, a.description, "", 
+                   a.images[0], a.images[1], a.images[2], a.images[3], a.images[4], a.images[5],
+                   a.images[6], a.images[7], a.images[8], a.images[9], a.images[10], a.images[11],
                    a.supplier, a.price, a.quantity, a.weight,
                    a.category, a.category, a.subcategory, a.subcategory,
                    a.available, "EOREOR"]
                 writer.writerow(row)
                 
-        print ("    Fisierul original cu articole a fost salvat:    " + filename)
+        print ("    Fisierul cu articole pentru magazinul online a fost salvat:    " + filename)
     
     def ExportPriceAndAvailability(self, articles, filename):
         
