@@ -36,7 +36,7 @@ def main():
     print("*******************************************")
     print("*** Actualizare date magazinul Haiducel ***")
     print("*******************************************")
-    print("Adrian Mos, V 3.2, 30.05.2016\n")
+    print("Adrian Mos, V 3.3, 01.06.2016\n")
     
     
     try:
@@ -58,103 +58,102 @@ def main():
                 sys.exit("Program terminat.")
                 break
             elif userInput=="2":
-                supplierFeed = NANArticles("NAN")    
+                feed = NANArticles("NAN")    
                 break
             elif userInput=="3":
-                supplierFeed = HDREArticles("HDRE")
+                feed = HDREArticles("HDRE")
                 break
             elif userInput=="4":
-                supplierFeed = BEBArticles("BEB")
+                feed = BEBArticles("BEB")
                 break
             elif userInput=="5":
-                supplierFeed = BebeBrandsArticles("HBBA")
+                feed = BebeBrandsArticles("HBBA")
                 break
             elif userInput=="6":
-                supplierFeed = BabyShopsArticles("HMER")
+                feed = BabyShopsArticles("HMER")
                 break
             elif userInput=="7":
-                supplierFeed = KidsDecorArticles("HDEC")
+                feed = KidsDecorArticles("HDEC")
                 break
             elif userInput=="8":
-                supplierFeed = HubnersArticles("HHUB")
+                feed = HubnersArticles("HHUB")
                 break
             else:
                 sys.exit("Optiune invalida. Program terminat.")
         
                 
-        print("  Procesare articole de tipul " + supplierFeed.__class__.__name__ + '.')
+        print("  Procesare articole de tipul " + feed.__class__.__name__ + '.')
         
         # Configure the error log file.
-        logging.basicConfig(filename=os.path.join(supplierFeed.code, 'erori ' + supplierFeed.code + '.log'),
+        logging.basicConfig(filename=os.path.join(feed.code, 'erori ' + feed.code + '.log'),
                             level=logging.INFO,filemode='w',
                             format='%(asctime)s     %(message)s')
                   
         if AskUserYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':    
-            supplierFeed.DownloadFeed()
+            feed.DownloadFeed()
         
-        print("\n*** Import date din feed " + supplierFeed.code)
-        eroriImport = supplierFeed.Import()     
+        print("\n*** Import date din feed " + feed.code)
+        eroriImport = feed.Import()     
         
         print("\n*** Articole exportate pentru magazinul online")
         export2 = Export();
-        fileShop = supplierFeed.code + "/out/" + supplierFeed.code + ' Onlineshop ' + time.strftime("%Y-%m-%d") + '.csv'
-        export2.ExportDataForOnlineshop(supplierFeed, fileShop)		
+        fileShop = feed.code + "/out/" + feed.code + ' Onlineshop ' + time.strftime("%Y-%m-%d") + '.csv'
+        export2.ExportDataForOnlineshop(feed, fileShop)		
     
-        supplierFeed.ConvertToOurFormat()
-        print("    Articole importate: "+ str(supplierFeed.articleList.__len__()) + ". Erori: " + str(eroriImport))
+        feed.ConvertToOurFormat()
+        print("    Articole importate: "+ str(feed.articleList.__len__()) + ". Erori: " + str(eroriImport))
         
-        if supplierFeed.articleList.__len__() < 50:
+        if feed.articleList.__len__() < 50:
             logging.error('ATENTIE: Posibila eroare in datele furnizorului. Exista mai putin de 50 de articole.')
             if AskUserYesOrNo('    ATENTIE:\n    Posibila eroare in datele furnizorului.\n    Exista mai putin de 50 de articole. Continuati?') == 'nu':    
                 sys.exit("Ati renuntat la procesare.")
         
         
-        supplierFeed.RemoveCrapArticles()
-        print("    Articole importate, dupa eliminare: "+ str(supplierFeed.articleList.__len__()))
+        feed.RemoveCrapArticles()
+        print("    Articole importate, dupa eliminare: "+ str(feed.articleList.__len__()))
         
-        print("\n*** Import articole din baza de date Haiducel, distribuitor " + supplierFeed.code)
+        print("\n*** Import articole din baza de date Haiducel, distribuitor " + feed.code)
         haiducelArticles = HaiducelArticles("Haiducel")
         haiducelArticles.Import()
-        haiducelArticlesFiltered = haiducelArticles.FilterBySupplier(supplierFeed.code)
+        haiducelArticlesFiltered = haiducelArticles.FilterBySupplier(feed.code)
         print("    Articole importate: "+ str(haiducelArticlesFiltered.articleList.__len__()))
         
         
         print("\n************ COMPARARI ************")
         
         print("\n*** Articole existente")
-        updatedArticles, updateMessages = Operations.ExtractUpdatedArticles(haiducelArticlesFiltered, supplierFeed)
+        updatedArticles, updateMessages = Operations.ExtractUpdatedArticles(haiducelArticlesFiltered, feed)
         # Set the saving paths & code for the updated articles identical to the supplier's paths
         # The updated articles belong to the supplier.
-        updatedArticles.paths = supplierFeed.paths    
+        updatedArticles.paths = feed.paths    
         print("    Articole actualizate: "+ str(updateMessages.__len__())) 
         export1 = Export()
-        filenameArticlesToUpdate = supplierFeed.code + "/out/" + supplierFeed.code + ' articole existente cu modificari in pret sau status ' + time.strftime("%Y-%m-%d") + '.csv'
+        filenameArticlesToUpdate = feed.code + "/out/" + feed.code + ' articole existente cu modificari in pret sau status ' + time.strftime("%Y-%m-%d") + '.csv'
         export1.ExportPriceAndAvailabilityAndMessages(updatedArticles, updateMessages, filenameArticlesToUpdate)
         
         print("\n*** Articole noi active")
-        articlesNew = Operations.SubstractArticles(supplierFeed, haiducelArticlesFiltered)
-        articlesNew = Operations.RemoveUnavailableArticles(articlesNew)
-        articlesNew.paths = supplierFeed.paths
-        filenameArticlesNew = supplierFeed.code + "/out/" + supplierFeed.code + ' articole noi ' + time.strftime("%Y-%m-%d") + '.csv'
-        print("    Articole noi in feed: " + str(articlesNew.articleList.__len__()))
-        #export1.ExportPriceAndAvailability(articlesNew, filenameArticlesNew)
-        export1.ExportAllData(articlesNew, filenameArticlesNew)
+        newArticles = Operations.SubstractArticles(feed, haiducelArticlesFiltered)
+        newArticles = Operations.RemoveUnavailableArticles(newArticles)
+        newArticles.paths = feed.paths
+        filenamenewArticles = feed.code + "/out/" + feed.code + ' articole noi ' + time.strftime("%Y-%m-%d") + '.csv'
+        print("    Articole noi in feed: " + str(newArticles.articleList.__len__()))
+        export1.ExportAllData(newArticles, filenamenewArticles)
         
         print("\n*** Toate articolele din feed transformate in formatul nostru")
-        filenameSupplierFeedOurFormat = supplierFeed.code + "/out/" + supplierFeed.code + ' original ' + time.strftime("%Y-%m-%d") + '.csv'
-        export1.ExportAllData(supplierFeed, filenameSupplierFeedOurFormat)		
+        filenamefeedOurFormat = feed.code + "/out/" + feed.code + ' original ' + time.strftime("%Y-%m-%d") + '.csv'
+        export1.ExportAllData(feed, filenamefeedOurFormat)		
         
         print("\n*** Articole sterse din feed")
-        articlesRemoved = Operations.SubstractArticles(haiducelArticlesFiltered, supplierFeed)
-        filenameArticlesToRemove = supplierFeed.code + "/out/" + supplierFeed.code + ' articole de sters ' + time.strftime("%Y-%m-%d") + '.csv'
-        print("    Articole ce nu mai exista in feed: " + str(articlesRemoved.articleList.__len__()))
-        export1.ExportArticlesForDeletion (articlesRemoved, filenameArticlesToRemove)
+        removedArticles = Operations.SubstractArticles(haiducelArticlesFiltered, feed)
+        filenameArticlesToRemove = feed.code + "/out/" + feed.code + ' articole de sters ' + time.strftime("%Y-%m-%d") + '.csv'
+        print("    Articole ce nu mai exista in feed: " + str(removedArticles.articleList.__len__()))
+        export1.ExportArticlesForDeletion (removedArticles, filenameArticlesToRemove)
         
         if eroriImport > 0:
             print("\n\n***    Au fost gasite "+ str(eroriImport) + " ERORI in feed. Exista articole neimportate. ANUNTATI distribuitorul. Detalii in log.")
         
         if AskUserYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
-            articlesNew.DownloadImages();  
+            newArticles.DownloadImages();  
             
     except Exception as ex:
         print("\n\n Eroare: " + repr(ex) + "\n")
