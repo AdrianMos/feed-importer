@@ -66,6 +66,24 @@ class Export(object):
                 writer.writerow(row)
                 
         print ("    Fisierul cu articole a fost salvat:    " + filename)
+
+    def ExportOriginalData(self, articles, filename):
+            
+        with open(filename, 'wt') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_NONNUMERIC, lineterminator='\n')
+            writer.writerow(list(self.header.values()))
+            
+            for a in articles.articleList:
+                
+                row = [a.id, a.title, a.description, a.title, a.description, a.images, 
+                   "", "", "", "", "", "",
+                   "", "", "", "", "", "",
+                   a.supplier, a.price, a.quantity, a.weight,
+                   a.category, a.category, a.subcategory, a.subcategory,
+                   a.available, "EOREOR"]
+                writer.writerow(row)
+                
+        print ("    Fisierul original cu articole a fost salvat:    " + filename)
     
     def ExportPriceAndAvailability(self, articles, filename):
         

@@ -94,6 +94,12 @@ def main():
         
         print("\n*** Import date din feed " + supplierFeed.code)
         eroriImport = supplierFeed.Import()     
+        
+        print("\n*** Toate articolele din feed")
+        export2 = Export();
+        filenameSupplierFeedFormated = supplierFeed.code + "/out/" + supplierFeed.code + ' original2 ' + time.strftime("%Y-%m-%d") + '.csv'
+        export2.ExportOriginalData(supplierFeed, filenameSupplierFeedFormated)		
+    
         supplierFeed.ConvertToOurFormat()
         print("    Articole importate: "+ str(supplierFeed.articleList.__len__()) + ". Erori: " + str(eroriImport))
         
