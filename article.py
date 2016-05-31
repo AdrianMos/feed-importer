@@ -18,7 +18,11 @@ class Article(object):
         self.supplier = supplier.strip()
         self.images = [img.strip() for img in images]
         
-        #self.imagesProcessed = [""]*10
+        # Extend the images list to the maximum elelemnts
+        for i in range(len(self.images), 13):
+            self.images.append("")
+        
+
     
        
     def IsSameArticle(self, articleToCompare):
