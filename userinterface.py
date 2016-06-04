@@ -7,7 +7,7 @@ class UserInterface(object):
         print("*******************************************")
         print("*** Actualizare date magazinul Haiducel ***")
         print("*******************************************")
-        print("Adrian Mos, V 3.3, 01.06.2016\n")
+        print("Adrian Mos, V 3.3, 04.06.2016\n")
     
     def DisplayOptions(self):
         
