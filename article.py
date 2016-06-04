@@ -18,7 +18,11 @@ class Article(object):
         self.supplier = supplier.strip()
         self.images = [img.strip() for img in images]
         
-        #self.imagesProcessed = [""]*10
+        # Extend the images list to the maximum elelemnts
+        for i in range(len(self.images), 13):
+            self.images.append("")
+        
+
     
        
     def IsSameArticle(self, articleToCompare):
@@ -33,16 +37,16 @@ class Article(object):
         :param articleToCompare:
         '''
         msg = ""
-        different = False
+        isDifferent = False
         if self.price!=articleToCompare.price:
             msg = msg + " pret " + str(self.price) + "=/=" + str(articleToCompare.price) 
-            different = True
+            isDifferent = True
         
         if self.available!=articleToCompare.available:
             msg = msg + " stoc " + str(self.available) + "=/=" + str(articleToCompare.available)
-            different = True
+            isDifferent = True
             
-        return different, msg
+        return isDifferent, msg
                 
                 
     def __str__(self):

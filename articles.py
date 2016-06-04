@@ -59,6 +59,9 @@ class Articles(object):
         print("*** Functionalitatea de download nu a fost implementata.")
         pass
     
+    def ArticlesCount(self):
+        return self.articleList.__len__()
+    
     @staticmethod
     def DownloadAndSaveImage(imgUrl, imgSavePath1, imgSavePath2=""):
         try:
@@ -133,10 +136,10 @@ class Articles(object):
         print("    Articolele ce contin in titlu ", crap, " sunt eliminate.")
         
                 
-        itemsBeforeRemoval = self.articleList.__len__()
+        itemsBeforeRemoval = self.ArticlesCount()
         self.articleList = [art for art in self.articleList if not any(crapDetector in art.title.lower() for crapDetector in crap)]
          
-        print("    Articole eliminate din feed: " + str(itemsBeforeRemoval - self.articleList.__len__()))
+        print("    Articole eliminate din feed: " + str(itemsBeforeRemoval - self.ArticlesCount()))
      
        
     def DownloadImages(self):
@@ -489,6 +492,7 @@ class Articles(object):
                 filteredArticles.Add1(article)
         
         return filteredArticles
+        
       
 class NANArticles(Articles):
      
