@@ -2,12 +2,18 @@
 class UserInterface(object):
     """User interface functionality"""
     
+    TITLE_LENGTH = 79
+    FILL_CHARACTER = '-'
+    HORIZONTAL_LINE = FILL_CHARACTER * TITLE_LENGTH + '\n'
+    
+    titleCounter = 1;
+    
     def DisplayHeader(self):
         
-        print("*******************************************")
-        print("*** Actualizare date magazinul Haiducel ***")
-        print("*******************************************")
-        print("Adrian Mos, V 3.3, 04.06.2016\n")
+        print('\n' + '*' * self.TITLE_LENGTH)
+        print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' '))
+        print('*' * self.TITLE_LENGTH)
+        print("Adrian Mos, V 3.4, 04.06.2016\n")
     
     def DisplayOptions(self):
         
@@ -22,7 +28,30 @@ class UserInterface(object):
                                " ilegale in feed, feed-nu se descarca\n"
               "  8. Actualizare Hubners (HHUB)\n"
               )
+              
+    def Title(self, title):
+        
+        titleCountStr = '(' + str(self.titleCounter) + ')'
+        
+        if len(title) <= self.TITLE_LENGTH - 2:
+            
+            formatedTitle = title.upper().center(self.TITLE_LENGTH \
+                                                 - len(titleCountStr),
+                                                 self.FILL_CHARACTER)
+            
+            print('\n' + titleCountStr + formatedTitle + '\n')
+        else:
+            print(self.HORIZONTAL_LINE +
+                  titleCountStr + ' ' +
+                  title.upper() + '\n' +
+                  self.HORIZONTAL_LINE)
+        
+        self.titleCounter += 1
     
+    def HorizontalLine(self):
+        print (self.HORIZONTAL_LINE)
+    
+
     def AskYesOrNo(self, question):
         '''
         Displays the question and waits for a yes or no answer (y/n).
