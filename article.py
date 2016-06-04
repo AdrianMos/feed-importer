@@ -37,16 +37,16 @@ class Article(object):
         :param articleToCompare:
         '''
         msg = ""
-        different = False
+        isDifferent = False
         if self.price!=articleToCompare.price:
             msg = msg + " pret " + str(self.price) + "=/=" + str(articleToCompare.price) 
-            different = True
+            isDifferent = True
         
         if self.available!=articleToCompare.available:
             msg = msg + " stoc " + str(self.available) + "=/=" + str(articleToCompare.available)
-            different = True
+            isDifferent = True
             
-        return different, msg
+        return isDifferent, msg
                 
                 
     def __str__(self):
