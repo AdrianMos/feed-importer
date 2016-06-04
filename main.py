@@ -9,61 +9,41 @@ import logging
 #add the current folder to the python paths
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from article import Article
+from userinterface import UserInterface
+from articles import Articles
 from factory import Factory
 from export import Export
 from operations import Operations
 import time
 
 
-def AskUserYesOrNo(question):
-    '''
-    Displays the question to the user and waits for a yes or no answer (y/n).
-    '''
-    userInput=""
-    print('')
-    while (userInput!="da" and userInput!="nu"):
-        userInput = input(question + ' da/nu: >> ').lower()
-    return userInput
-
-
+def GenerateOutputFilename(name, code):
+    return (code
+            + "/out/" 
+            + code 
+            + ' ' + name + ' ' 
+            + time.strftime("%Y-%m-%d")
+            + '.csv')
 
 def main():
-    print("*******************************************")
-    print("*** Actualizare date magazinul Haiducel ***")
-    print("*******************************************")
-    print("Adrian Mos, V 3.3, 01.06.2016\n")
+    factory = Factory()
+    user = UserInterface()
 
-    factory = Factory();    
+
+    user.DisplayHeader()
     
     try:
         
-        while True:
-            print("Optiuni disponibile:")
-            print("  1. Iesire\n"
-                  "  2. Actualizare Nancy (NAN)\n"
-                  "  3. Actualizare BabyDreams (HDRE)\n" 
-                  "  4. Actualizare Bebex (BEB)\n"
-                  "  5. Actualizare BebeBrands (HBBA)\n"
-                  "  6. Actualizare BabyShops (HMER)\n"
-                  "  7. Actualizare KidsDecor (HDEC) - nu merge, caractere ilegale in feed, feed-nu se descarca\n"
-                  "  8. Actualizare Hubners (HHUB)\n"
-                  )
-            userInput = input('Introduceti numarul optiunii pentru a continua: >> ')
-            
-
-            if userInput=="1":
-                sys.exit("Program terminat.")
-                break
-            else:
-                feed = factory.CreateArticlesObject(userInput)
-            
-                if feed is not None:
-                   break
-                else
-                   sys.exit("Optiune invalida. Program terminat.")
+        user.DisplayOptions()
+        userInput = user.AskInput('Introduceti numarul optiunii: >> ')
         
-                
+        if userInput == "1": 
+            sys.exit("Program terminat.")
+        
+        feed = factory.CreateSupplierFeedObject(userInput)
+        if feed is None: 
+            sys.exit("Optiune invalida. Program terminat.")
+        
         print("  Procesare articole de tipul " + feed.__class__.__name__ + '.')
         
         # Configure the error log file.
@@ -71,7 +51,7 @@ def main():
                             level=logging.INFO,filemode='w',
                             format='%(asctime)s     %(message)s')
                   
-        if AskUserYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':    
+        if user.AskYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':    
             feed.DownloadFeed()
         
         print("\n*** Import date din feed " + feed.code)
@@ -79,15 +59,19 @@ def main():
         
         print("\n*** Articole exportate pentru magazinul online")
         export2 = Export();
-        fileShop = feed.code + "/out/" + feed.code + ' Onlineshop ' + time.strftime("%Y-%m-%d") + '.csv'
+        fileShop = GenerateOutputFilename('Onlineshop', feed.code)
         export2.ExportDataForOnlineshop(feed, fileShop)		
     
         feed.ConvertToOurFormat()
-        print("    Articole importate: "+ str(feed.articleList.__len__()) + ". Erori: " + str(eroriImport))
+        print("    Articole importate: " + str(feed.articleList.__len__()) + ". Erori: " + str(eroriImport))
         
         if feed.articleList.__len__() < 50:
-            logging.error('ATENTIE: Posibila eroare in datele furnizorului. Exista mai putin de 50 de articole.')
-            if AskUserYesOrNo('    ATENTIE:\n    Posibila eroare in datele furnizorului.\n    Exista mai putin de 50 de articole. Continuati?') == 'nu':    
+            logging.error('ATENTIE: Posibila eroare in datele furnizorului.'+
+                          ' Exista mai putin de 50 de articole.')
+            
+            if user.AskYesOrNo('    ATENTIE:\n    Posibila eroare in datele' +
+                               ' furnizorului.\n    Exista mai putin de 50' + 
+                               ' de articole. Continuati?') == 'nu':    
                 sys.exit("Ati renuntat la procesare.")
         
         
@@ -95,7 +79,7 @@ def main():
         print("    Articole importate, dupa eliminare: "+ str(feed.articleList.__len__()))
         
         print("\n*** Import articole din baza de date Haiducel, distribuitor " + feed.code)
-        haiducelArticles = HaiducelArticles("Haiducel")
+        haiducelArticles = factory.CreateHaiducelFeedObject()
         haiducelArticles.Import()
         haiducelArticlesFiltered = haiducelArticles.FilterBySupplier(feed.code)
         print("    Articole importate: "+ str(haiducelArticlesFiltered.articleList.__len__()))
@@ -110,31 +94,37 @@ def main():
         updatedArticles.paths = feed.paths    
         print("    Articole actualizate: "+ str(updateMessages.__len__())) 
         export1 = Export()
-        filename = feed.code + "/out/" + feed.code + ' articole existente cu modificari in pret sau status ' + time.strftime("%Y-%m-%d") + '.csv'
-        export1.ExportPriceAndAvailabilityAndMessages(updatedArticles, updateMessages, filename)
+        filename = GenerateOutputFilename('articole existente cu modificari'
+                                          ' in pret sau status',
+                                          feed.code)
+        export1.ExportPriceAndAvailabilityAndMessages(updatedArticles, 
+                                                      updateMessages, filename)
         
         print("\n*** Articole noi active")
         newArticles = Operations.SubstractArticles(feed, haiducelArticlesFiltered)
         newArticles = Operations.RemoveUnavailableArticles(newArticles)
         newArticles.paths = feed.paths
-        filename = feed.code + "/out/" + feed.code + ' articole noi ' + time.strftime("%Y-%m-%d") + '.csv'
+        filename = GenerateOutputFilename('articole noi', feed.code)                  
+                   
         print("    Articole noi in feed: " + str(newArticles.articleList.__len__()))
         export1.ExportAllData(newArticles, filename)
         
         print("\n*** Toate articolele din feed transformate in formatul nostru")
-        filename = feed.code + "/out/" + feed.code + ' original ' + time.strftime("%Y-%m-%d") + '.csv'
+        filename = GenerateOutputFilename('original', feed.code)
         export1.ExportAllData(feed, filename)		
         
         print("\n*** Articole sterse din feed")
         removedArticles = Operations.SubstractArticles(haiducelArticlesFiltered, feed)
-        filename = feed.code + "/out/" + feed.code + ' articole de sters ' + time.strftime("%Y-%m-%d") + '.csv'
+        filename = GenerateOutputFilename('articole de sters', feed.code)
         print("    Articole ce nu mai exista in feed: " + str(removedArticles.articleList.__len__()))
         export1.ExportArticlesForDeletion (removedArticles, filename)
         
         if eroriImport > 0:
-            print("\n\n***    Au fost gasite "+ str(eroriImport) + " ERORI in feed. Exista articole neimportate. ANUNTATI distribuitorul. Detalii in log.")
+            print("\n\n***    Au fost gasite "+ str(eroriImport) + 
+                  " ERORI in feed. Exista articole neimportate. " + 
+                  "ANUNTATI distribuitorul. Detalii in log.")
         
-        if AskUserYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
+        if user.AskYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
             newArticles.DownloadImages();  
             
     except Exception as ex:
@@ -142,7 +132,7 @@ def main():
         logging.error("main: " + repr(ex))
       
    
-    userInput = input('\nApasati enter pentru iesire. >> ')
+    user.AskInput('\nApasati enter pentru iesire. >> ')
     print("\n*** Program terminat ***")
     
     

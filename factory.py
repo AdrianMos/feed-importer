@@ -4,7 +4,7 @@ from article import Article
 class Factory(object):
     """Factory for articles objects"""
     
-    def CreateArticlesObject(self, userInput):
+    def CreateSupplierFeedObject(self, userInput):
         
         #TODO(ArianMos): include the use of str_to_class()
         #TODO(AdrianMos): decouple from user interface
@@ -28,3 +28,8 @@ class Factory(object):
             newObject = None
         
         return newObject;
+        
+    def CreateHaiducelFeedObject(self):
+        return HaiducelArticles("Haiducel");
+    
+
