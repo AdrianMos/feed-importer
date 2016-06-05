@@ -10,9 +10,10 @@ class UserInterface(object):
     
     def DisplayHeader(self):
         
-        print('\n' + '*' * self.TITLE_LENGTH)
-        print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' '))
-        print('*' * self.TITLE_LENGTH)
+        separator = '\n' + '*' * self.TITLE_LENGTH
+        print(separator + '\n')
+        print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' ')) 
+        print(separator)
         print("Adrian Mos, V 3.4, 04.06.2016\n")
     
     def DisplayOptions(self):
