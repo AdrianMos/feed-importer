@@ -223,7 +223,7 @@ class Articles(object):
         :param article: article used for computing the price
         
         Requirements: 
-          Prices less than 100 should be set to 0 (not displayed).
+          Prices less than 350 should be set to 0 (not displayed).
           Display promo price if available. 
           Displayed prices should be decreased with 1.
         '''  
@@ -233,8 +233,8 @@ class Articles(object):
         if (article.pricePromo < article.price and article.pricePromo > 0):
             result = float(article.pricePromo)-0.1
         
-        # Prices less than 160 should be set to 0
-        if result<160:
+        # Prices less than 350 should be set to 0
+        if result<350:
             return 0
         else:
             return result
