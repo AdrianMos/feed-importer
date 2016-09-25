@@ -46,7 +46,7 @@ class Export(object):
         
     def ExportAllData(self, articles, filename):
         
-        with open(filename, 'wt') as csvfile:
+        with open(filename, 'wt', encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', 
                                 quoting=csv.QUOTE_NONNUMERIC,
                                 lineterminator='\n')
@@ -70,7 +70,7 @@ class Export(object):
 
     def ExportDataForOnlineshop(self, articles, filename):
             
-        with open(filename, 'wt') as csvfile:
+        with open(filename, 'wt', encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', 
                                 quoting=csv.QUOTE_NONNUMERIC, 
                                 lineterminator='\n')

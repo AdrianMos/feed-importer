@@ -501,7 +501,9 @@ class NANArticles(Articles):
     
         print("*** Descarcare feed NAN...")
         response = urllib.request.urlopen('http://www.importatorarticolecopii.ro/feeds/general_feed.php')  
-        feedData = response.read()
+        
+        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape",'ignore')
+        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
         
         with open(self.paths.feedFileNamePath, 'wb') as textfile:
             textfile.write(feedData)
@@ -514,9 +516,9 @@ class NANArticles(Articles):
          '''
          Import articles from csv file
          '''
-#         with open('input_NAN_noHeader_noEmptyLine.txt', 'rt') as csvfile:
-         #with open('NAN/feedNAN.txt', 'rt') as csvfile:
+         
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
+
          with open(self.paths.feedFileNamePath, 'rt') as csvfile:
              reader = csv.reader(csvfile, delimiter='|')
              
@@ -584,7 +586,10 @@ class BEBArticles(Articles):
         print("*** Descarcare feed BEBEX...")
         # response = urllib.request.urlopen('http://www.bebex.ro/feed/datafeed_produse_general_csv.php')
         response = urllib.request.urlopen('http://www.bebex.ro/datafeed/complete/csv/')
-        feedData = response.read()
+        
+        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
+        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
+       
         
         with open(self.paths.feedFileNamePath, 'wb') as textfile:
             textfile.write(feedData)
@@ -608,8 +613,9 @@ class BEBArticles(Articles):
          '''           
         
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
-         with open(self.paths.feedFileNamePath, 'rt') as csvfile:
-             reader = csv.reader(csvfile, delimiter=',')
+         
+         with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
+             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
              counter=0
              for row in reader:
                  counter=counter+1
@@ -811,14 +817,13 @@ class HaiducelArticles(Articles):
          '''
          Import articles from csv file, oscommerce easypopulate format
          '''
-         #with open('haiducel/feedHaiducel.csv', 'rt', encoding="latin1") as csvfile:
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
          
          if (not os.path.isfile(self.paths.feedFileNamePath)):
              logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' + self.paths.feedFileNamePath)
              sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
          
-         
+          
          with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
              
              reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
@@ -1189,7 +1194,7 @@ class KidsDecorArticles(Articles):
                  # Append article to list
                  if row.__len__() == 13:
                      descriere = row[5]
-                     print(counter);
+                     #print(counter);
                      
                      self.articleList.append( Article(id = row[2],
                                                   title = row[4],
