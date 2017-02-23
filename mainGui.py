@@ -18,7 +18,7 @@ import time
 
 import tkinter as tk
 from tkinter.ttk import *
-from tkinter import Tk, StringVar, ttk
+from tkinter import Tk, StringVar, ttk, IntVar
 
 export = Export()
 
@@ -63,8 +63,8 @@ class Model:
         self.myMoney = Observable(0)
         self.canDownloadImages = Observable(False)
         self.version = 'V 3.5, 25.09.2016'
-        self.selectedSupplier = '' 
-        self.suppliers = [
+        self.supplier = '' 
+        self.suppliersList = [
             'Nancy (NAN)',
             'BabyDreams (HDRE)',
             'Bebex (BEB)',
@@ -73,9 +73,6 @@ class Model:
             'KidsDecor (HDEC) - nu merge,',
             'Hubners (HHUB' ]
 
-        
-        
-        
     
     def addMoney(self, value):
         self.myMoney.set(self.myMoney.get() + value)
@@ -89,11 +86,11 @@ class Model:
         return str(self.version)
 
     def getListOfSuppliers(self):     
-        return self.suppliers
+        return self.suppliersList
 
     def storeSelectedSupplier(self, supplier):
-        self.selectedSupplier = supplier
-        print('Selected supplier: ' + str(supplier))
+        self.supplier = supplier
+        print('Supplier: ' + str(self.supplier))
     
     
 
@@ -102,6 +99,7 @@ class View(tk.Toplevel):
         tk.Toplevel.__init__(self, master)
         self.protocol('WM_DELETE_WINDOW', self.master.destroy)
         self.CreateControls(master)
+        self.processingType.set(1)
 
     def CreateControls(self, master):
         self.editDummy = tk.Entry(self, width=8)
@@ -109,31 +107,39 @@ class View(tk.Toplevel):
         self.btnDownloadFeed   = tk.Button(self, text='Descarca', width=10)
         self.btnProcess        = tk.Button(self, text='Proceseaza')
         self.btnDownloadImages = tk.Button(self, text='Descarca imagini', state='disabled')
-
-        self.editPathHaiducel  = tk.Entry(self, state='readonly')
-        self.editPathSupplier  = tk.Entry(self, state='readonly')
-        self.labelVersion   = tk.Label(self, text='')
+        self.editPathHaiducel  = tk.Entry(self,  state='readonly')
+        self.editPathSupplier  = tk.Entry(self,  state='readonly')
+        self.labelVersion      = tk.Label(self,  text='')
                 
-        self.selectedSupplier  = StringVar()
-        self.comboSupplier     = tk.ttk.Combobox(self, state='readonly', textvariable=self.selectedSupplier)
-        #self.comboSupplier.bind("<<ComboboxSelected>>", lambda event : print(str(self.selectedSupplier.get())))
+        self.supplier  = StringVar()
+        self.comboSupplier     = tk.ttk.Combobox(self, state='readonly', textvariable=self.supplier)
+        #self.comboSupplier.bind("<<ComboboxSelected>>", lambda event : print(str(self.supplier.get())))
+
         
         self.columnconfigure(1, weight=1)
         
-        tk.Label(self, text='Actualizare date Haiducel').grid(columnspan=3)
-        self.labelVersion.grid(columnspan=3)
+        tk.Label(self, text='Actualizare date Haiducel').grid(columnspan=4)
+        self.labelVersion.grid(columnspan=4)
         tk.Label(self, text='Actualizare: ').grid(sticky='e')
-        tk.Label(self, text='Feed haiducel: ').grid(sticky='e')
+        tk.Label(self, text='Distribuitor: ').grid(sticky='e')
+        tk.Label(self, text='Date haiducel: ').grid(sticky='e')
         tk.Label(self, text='Feed distribuitor: ').grid(sticky='e')
 
-        self.comboSupplier.grid(row=2, column=1, sticky='ew')
+       
         #self.comboSupplier.current(0)
-        self.editPathHaiducel.grid(row=3, column=1, sticky='ew')
-        self.editPathSupplier.grid(row=4, column=1, sticky='ew')
-        self.btnDownloadFeed.grid(row=4, column=3)
+        
+        self.processingType = IntVar()
+        tk.Radiobutton(self, text="Magazin online", variable=self.processingType, value=1).grid(row=2, column=1, sticky='w')
+        tk.Radiobutton(self, text="Catalog",        variable=self.processingType, value=2).grid(row=2, column=2, sticky='w')
+                
+        self.comboSupplier.grid(row=3, column=1, columnspan=2, sticky='ew')
+        self.editPathHaiducel.grid(row=4, column=1, columnspan=2, sticky='ew')
+        self.editPathSupplier.grid(row=5, column=1, columnspan=2, sticky='ew')
+        self.btnDownloadFeed.grid(row=5, column=3)
         self.btnProcess.grid(column=1, columnspan=3, sticky='ew')
         self.btnDownloadImages.grid(column=1, columnspan=3, sticky='ew')
         self.editDummy.grid()
+        
             
     def SetMoney(self, money):
         self.editDummy.delete(0,'end')
@@ -151,10 +157,10 @@ class View(tk.Toplevel):
 
     def disableBtnDownloadImages(self):
         self.btnDownloadImages.config(state='disabled')
-        print('disable')
+        print('disabled')
 
     def setSupplierChangedCommand(self, callback):
-        self.comboSupplier.bind("<<ComboboxSelected>>", lambda event : callback(self.selectedSupplier.get()))
+        self.comboSupplier.bind("<<ComboboxSelected>>", lambda event : callback(self.supplier.get()))
 
 
 class Controller:
@@ -169,10 +175,10 @@ class Controller:
         self.view1.btnProcess.config(command=self.RemoveMoney)
         self.MoneyChanged(self.model.myMoney.get())
 
-        self.view1.setSupplierChangedCommand(self.SupplierChanged)
+        self.view1.setSupplierChangedCommand(self.model.storeSelectedSupplier)
+        
 
-    def SupplierChanged(self, supplier):
-        self.model.storeSelectedSupplier(supplier)
+
         
     def AddMoney(self):
         self.model.addMoney(10)
