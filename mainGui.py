@@ -90,7 +90,11 @@ class Model:
 
     def storeSelectedSupplier(self, supplier):
         self.supplier = supplier
-        print('Supplier: ' + str(self.supplier))
+        print('Supplier: ' + str(supplier))
+
+    def storeOperationType(self, operation):
+        self.operation = operation
+        print('Operation: ' + str(operation))
     
     
 
@@ -99,7 +103,7 @@ class View(tk.Toplevel):
         tk.Toplevel.__init__(self, master)
         self.protocol('WM_DELETE_WINDOW', self.master.destroy)
         self.CreateControls(master)
-        self.processingType.set(1)
+        self.operationType.set(1)
 
     def CreateControls(self, master):
         self.editDummy = tk.Entry(self, width=8)
@@ -109,12 +113,9 @@ class View(tk.Toplevel):
         self.btnDownloadImages = tk.Button(self, text='Descarca imagini', state='disabled')
         self.editPathHaiducel  = tk.Entry(self,  state='readonly')
         self.editPathSupplier  = tk.Entry(self,  state='readonly')
-        self.labelVersion      = tk.Label(self,  text='')
-                
-        self.supplier  = StringVar()
+        self.labelVersion      = tk.Label(self,  text='')  
+        self.supplier = StringVar()
         self.comboSupplier     = tk.ttk.Combobox(self, state='readonly', textvariable=self.supplier)
-        #self.comboSupplier.bind("<<ComboboxSelected>>", lambda event : print(str(self.supplier.get())))
-
         
         self.columnconfigure(1, weight=1)
         
@@ -124,14 +125,21 @@ class View(tk.Toplevel):
         tk.Label(self, text='Distribuitor: ').grid(sticky='e')
         tk.Label(self, text='Date haiducel: ').grid(sticky='e')
         tk.Label(self, text='Feed distribuitor: ').grid(sticky='e')
-
-       
-        #self.comboSupplier.current(0)
         
-        self.processingType = IntVar()
-        tk.Radiobutton(self, text="Magazin online", variable=self.processingType, value=1).grid(row=2, column=1, sticky='w')
-        tk.Radiobutton(self, text="Catalog",        variable=self.processingType, value=2).grid(row=2, column=2, sticky='w')
-                
+        self.operationType = IntVar()
+        # radio buttons for selecting the operation type
+        self.radio1 = tk.Radiobutton(self,
+                          command=lambda : self.radioChangedCallback(self.operationType.get()),
+                          text="Magazin online",
+                          variable=self.operationType,
+                          value=1)
+        self.radio2 = tk.Radiobutton(self,
+                          command=lambda : self.radioChangedCallback(self.operationType.get()),
+                          text="Catalog",
+                          variable=self.operationType,
+                          value=2)
+        self.radio1.grid(row=2, column=1, sticky='w')
+        self.radio2.grid(row=2, column=2, sticky='w')
         self.comboSupplier.grid(row=3, column=1, columnspan=2, sticky='ew')
         self.editPathHaiducel.grid(row=4, column=1, columnspan=2, sticky='ew')
         self.editPathSupplier.grid(row=5, column=1, columnspan=2, sticky='ew')
@@ -159,8 +167,12 @@ class View(tk.Toplevel):
         self.btnDownloadImages.config(state='disabled')
         print('disabled')
 
-    def setSupplierChangedCommand(self, callback):
-        self.comboSupplier.bind("<<ComboboxSelected>>", lambda event : callback(self.supplier.get()))
+    def processingTypeChanged(self):
+        print('Processing type: ' + str(self.processingType.get()))
+        
+    def setSupplierChangedCommand(self, function):
+        self.comboSupplier.bind("<<ComboboxSelected>>",
+                                lambda event : function(self.supplier.get()))
 
 
 class Controller:
@@ -176,8 +188,7 @@ class Controller:
         self.MoneyChanged(self.model.myMoney.get())
 
         self.view1.setSupplierChangedCommand(self.model.storeSelectedSupplier)
-        
-
+        self.view1.radioChangedCallback = self.model.storeOperationType
 
         
     def AddMoney(self):
@@ -194,6 +205,7 @@ class Controller:
             self.view1.enableBtnDownloadImages()
         else:
             self.view1.disableBtnDownloadImages()
+
         
 def main():
 
@@ -316,8 +328,8 @@ def ProcessUpdatedArticles (haiducelFeed, supplierFeed):
                                       ' pret sau status modificat',
                                       supplierFeed.code)
     export.ExportPriceAndAvailabilityAndMessages(updatedArticles, 
-                                                  updateMessages, 
-                                                  filename)
+                                                 updateMessages, 
+                                                 filename)
     return updatedArticles
 
 def ProcessArticlesForDeletion (haiducelFeed, supplierFeed):
