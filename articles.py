@@ -26,20 +26,22 @@ class Articles(object):
     classdocs
     '''
     articleList=[]
-    paths = PathBuilder("")
-    code = ""
+    paths = PathBuilder('')
+    code = ''
+    friendlyName='not defined'
 
-    def __init__(self, code):
+    def __init__(self):
         '''
         Constructor
         '''
         self.articleList = []
-        self.code = code
-        self.paths = PathBuilder(code)
+        self.paths = PathBuilder(self.code)
         
         
-        # Check the folders availability for this client. Create the folder structure if necessary.
+        # Check the folders availability for this supplier.
+        # Create the folder structure if necessary.
         clientFolder = os.path.join(os.getcwd(), self.code, "out");
+        print('Folder distribuitor: ' + clientFolder)
         if not os.path.isdir(clientFolder):
             print("Folderul pentru acest cod nu exista, se va crea automat: " + clientFolder)
             
@@ -495,7 +497,9 @@ class Articles(object):
         
       
 class NANArticles(Articles):
-     
+
+    friendlyName = 'Nancy'
+    code         = 'NAN'
     
     def DownloadFeed(self):
     
@@ -580,7 +584,10 @@ class NANArticles(Articles):
         return newImageNames
 
 class BEBArticles(Articles):
-     
+
+    friendlyName = 'Bebex'
+    code         = 'BEB'
+    
     def DownloadFeed(self):
     
         print("*** Descarcare feed BEBEX...")
@@ -704,7 +711,9 @@ class HDREArticles(Articles):
     '''
     Handles the BabyDreams artiles (HDRE)
     '''
-     
+    friendlyName = 'BabyDreams'
+    code         = 'HDRE'
+    
     def DownloadFeed(self):
     
         print("*** Descarcare feed HDRE...")
@@ -853,7 +862,9 @@ class BebeBrandsArticles(Articles):
     '''
     Handles the BebeBrands articles (HBBA)
     '''
-        
+    friendlyName = 'BebeBrands'
+    code         = 'HBBA'
+    
     def DownloadFeed(self):
        
         print("*** Descarcare feed BebeBrands HBBA...")
@@ -974,7 +985,9 @@ class BabyShopsArticles(Articles):
     '''
     Handles the BabyShops articles (HMER)
     '''
-        
+    friendlyName = 'BabyShops'
+    code         = 'HMER'
+    
     def DownloadFeed(self):
        
         print("*** Descarcare feed BabyShops HMER...")
@@ -1156,7 +1169,10 @@ class BabyShopsArticles(Articles):
         return ("_Neclasificate", "")
      
 class KidsDecorArticles(Articles):
-     
+
+    friendlyName = 'KidsDecor - nu merge'
+    code         = 'HDEC'
+    
     def DownloadFeed(self):
     
         print("*** Descarcare feed KidsDecor...")
@@ -1257,6 +1273,8 @@ class HubnersArticles(Articles):
     '''
     Handles the Hubners articles (HHUB)
     '''
+    friendlyName = 'Hubners'
+    code         = 'HHUB'
         
     def DownloadFeed(self):
        

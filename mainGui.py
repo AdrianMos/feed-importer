@@ -60,19 +60,14 @@ class Observable:
 
 class Model:
     def __init__(self):
+
+        self.factory = Factory()
         self.myMoney = Observable(0)
         self.canDownloadImages = Observable(False)
         self.version = 'V 3.5, 25.09.2016'
         self.supplier = '' 
-        self.suppliersList = [
-            'Nancy (NAN)',
-            'BabyDreams (HDRE)',
-            'Bebex (BEB)',
-            'BebeBrands (HBBA)',
-            'BabyShops (HMER)',
-            'KidsDecor (HDEC) - nu merge,',
-            'Hubners (HHUB' ]
-
+        self.suppliersList = self.factory.GetSuppliersList()
+        print('SUPPLIERS LIST ' + str(self.suppliersList))
     
     def addMoney(self, value):
         self.myMoney.set(self.myMoney.get() + value)
@@ -91,6 +86,11 @@ class Model:
     def storeSelectedSupplier(self, supplier):
         self.supplier = supplier
         print('Supplier: ' + str(supplier))
+
+        self.feed = self.factory.CreateSupplierFeedObject(supplier)
+        print('  Procesare articole de tipul ' + self.feed.__class__.__name__ + '.')
+
+
 
     def storeOperationType(self, operation):
         self.operation = operation
@@ -229,8 +229,9 @@ def main():
         userInput = user.AskInput('Introduceti numarul optiunii: >> ')
         if userInput == '1':
             sys.exit('Program terminat.')
-        
-        feed = factory.CreateSupplierFeedObject(userInput)
+
+        # Temporary changed to a fixed supplier, code is obsolete
+        feed = factory.CreateSupplierFeedObject('Nancy (NAN)')
         if feed is None:
             sys.exit('Optiune invalida. Program terminat.')
         
