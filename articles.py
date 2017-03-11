@@ -40,16 +40,16 @@ class Articles(object):
         
         # Check the folders availability for this supplier.
         # Create the folder structure if necessary.
-        clientFolder = os.path.join(os.getcwd(), self.code, "out");
-        print('Folder distribuitor: ' + clientFolder)
-        if not os.path.isdir(clientFolder):
-            print("Folderul pentru acest cod nu exista, se va crea automat: " + clientFolder)
+        self.supplierFolder = os.path.join(os.getcwd(), self.code, "out");
+        print('Folder distribuitor: ' + self.supplierFolder)
+        if not os.path.isdir(self.supplierFolder):
+            print("Folderul pentru acest cod nu exista, se va crea automat: " + self.supplierFolder)
             
             try:
-                os.makedirs(clientFolder)
+                os.makedirs(self.supplierFolder)
             except OSError as ex:
                 sys.exit("Nu se poate crea folderul pentru acest cod: " + ex.reason)
-                logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
+                logging.error("Articles constructor: nu se poate crea folderul <" + self.supplierFolder + "> : mesaj : " + ex.reason)
                 raise
             
              
@@ -262,7 +262,7 @@ class Articles(object):
         '''
         
         map = [["rucioare copii",               "_CARUCIOARE",          "2 in 1"],
-			   ["crucioare|crucioare multifuncionale 2 in 1",                     "_CARUCIOARE",          "2 in 1"],
+	       ["crucioare|crucioare multifuncionale 2 in 1",                     "_CARUCIOARE",          "2 in 1"],
                ["rucioare pentru copii",        "_CARUCIOARE",          "2 in 1"],
                ["rucioare cu landou",           "_CARUCIOARE",          "3 in 1"],
                ["rucioare 3 in 1",              "_CARUCIOARE",          "3 in 1"],
