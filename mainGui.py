@@ -3,6 +3,7 @@ Created on 26.04.2014
 
 @author: Adrian Raul Mos
 '''
+import _thread
 import os.path
 import sys
 import logging
@@ -62,41 +63,44 @@ class Model:
     def __init__(self):
 
         self.factory = Factory()
-        self.myMoney = Observable(0)
+        self.pathSupplierFeed = Observable('')
         self.canDownloadImages = Observable(False)
         self.version = 'V 3.5, 25.09.2016'
         self.supplier = '' 
         self.suppliersList = self.factory.GetSuppliersList()
         print('SUPPLIERS LIST ' + str(self.suppliersList))
-    
-    def addMoney(self, value):
-        self.myMoney.set(self.myMoney.get() + value)
-        self.canDownloadImages.set(True)
-
-    def removeMoney(self, value):
-        self.myMoney.set(self.myMoney.get() - value)
-        self.canDownloadImages.set(False)
 
     def getVersion(self):
         return str(self.version)
+    
+    def storeOperationType(self, operation):
+        self.operation = operation
+        print('Operation: ' + str(operation))
 
     def getListOfSuppliers(self):     
-        return self.suppliersList
+        return self.suppliersList 
 
-    def storeSelectedSupplier(self, supplier):
+    def setSupplierFeedPathIfExists(self, file):
+        MSG_NOT_DOWNLOADED='nu exista descarcat'
+        if os.path.isfile(file) :
+            self.pathSupplierFeed.set(file)
+        else :
+            self.pathSupplierFeed.set(MSG_NOT_DOWNLOADED)
+    
+    def storeCurrentSupplier(self, supplier):
         self.supplier = supplier
         print('Supplier: ' + str(supplier))
 
         self.feed = self.factory.CreateSupplierFeedObject(supplier)
         print('  Procesare articole de tipul ' + self.feed.__class__.__name__ + '.')
 
-
-
-    def storeOperationType(self, operation):
-        self.operation = operation
-        print('Operation: ' + str(operation))
+        self.setSupplierFeedPathIfExists(self.feed.paths.feedFileNamePath)
     
-    
+    def downloadFeed(self):
+        #TODO(AdrianMos): Launch it in a thread; for now block the GUI
+        #_thread.start_new_thread ( self.feed.DownloadFeed, ())
+        self.feed.DownloadFeed()
+        self.setSupplierFeedPathIfExists(self.feed.paths.feedFileNamePath)
 
 class View(tk.Toplevel):
     def __init__(self, master):
@@ -106,14 +110,16 @@ class View(tk.Toplevel):
         self.operationType.set(1)
 
     def CreateControls(self, master):
-        self.editDummy = tk.Entry(self, width=8)
         
         self.btnDownloadFeed   = tk.Button(self, text='Descarca', width=10)
         self.btnProcess        = tk.Button(self, text='Proceseaza')
         self.btnDownloadImages = tk.Button(self, text='Descarca imagini', state='disabled')
         self.editPathHaiducel  = tk.Entry(self,  state='readonly')
-        self.editPathSupplier  = tk.Entry(self,  state='readonly')
-        self.labelVersion      = tk.Label(self,  text='')  
+        self.labelVersion      = tk.Label(self,  text='')
+
+        self.supplierPath = StringVar()
+        self.editPathSupplier  = tk.Entry(self,  state='readonly', textvariable=self.supplierPath)     
+        
         self.supplier = StringVar()
         self.comboSupplier     = tk.ttk.Combobox(self, state='readonly', textvariable=self.supplier)
         
@@ -146,19 +152,18 @@ class View(tk.Toplevel):
         self.btnDownloadFeed.grid(row=5, column=3)
         self.btnProcess.grid(column=1, columnspan=3, sticky='ew')
         self.btnDownloadImages.grid(column=1, columnspan=3, sticky='ew')
-        self.editDummy.grid()
         
+        self.supplierPath.set('none')
             
-    def SetMoney(self, money):
-        self.editDummy.delete(0,'end')
-        self.editDummy.insert('end', str(money))
-
     def displayVersion(self, version):
         self.labelVersion.config(text=version)
 
     def displaySuppliers(self, suppliersList):
         self.comboSupplier.config(values=suppliersList)
 
+    def displaySupplierPath(self, path):
+        self.supplierPath.set(str(path))
+    
     def enableBtnDownloadImages(self):
         self.btnDownloadImages.config(state='normal')
         print('normal')
@@ -178,29 +183,21 @@ class View(tk.Toplevel):
 class Controller:
     def __init__(self, root):
         self.model = Model()
-        self.model.myMoney.addCallback(self.MoneyChanged)
-        self.model.canDownloadImages.addCallback(self.ActivateDownloadImage)
+        self.model.canDownloadImages.addCallback(self.ChangeStateForBtnDownloadImage)
         self.view1 = View(root)
         self.view1.displayVersion(self.model.getVersion())
         self.view1.displaySuppliers(self.model.getListOfSuppliers())
-        self.view1.btnDownloadFeed.config(command=self.AddMoney)
-        self.view1.btnProcess.config(command=self.RemoveMoney)
-        self.MoneyChanged(self.model.myMoney.get())
+        self.model.pathSupplierFeed.addCallback(self.view1.displaySupplierPath)
+        self.view1.btnDownloadFeed.config(command=self.DownloadSupplierFeed)
+        #self.view1.btnProcess.config(command=self.?)
 
-        self.view1.setSupplierChangedCommand(self.model.storeSelectedSupplier)
+        self.view1.setSupplierChangedCommand(self.model.storeCurrentSupplier)
         self.view1.radioChangedCallback = self.model.storeOperationType
 
-        
-    def AddMoney(self):
-        self.model.addMoney(10)
+    def DownloadSupplierFeed(self):
+        self.model.downloadFeed()
 
-    def RemoveMoney(self):
-        self.model.removeMoney(10)
-
-    def MoneyChanged(self, money):
-        self.view1.SetMoney(money)
-
-    def ActivateDownloadImage(self, state):
+    def ChangeStateForBtnDownloadImage(self, state):
         if state is True:
             self.view1.enableBtnDownloadImages()
         else:
