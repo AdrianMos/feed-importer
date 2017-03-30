@@ -1,2 +1,2 @@
-# haiducel_importuri
+# haiducel
 scripturi pentru import articole
