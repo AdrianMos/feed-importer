@@ -1,10 +1,9 @@
-/* Layout
+/* Layout - store's main CSS
 -------------------------------------------------------------- */
 
 #bd {
 	padding: 10px 0 0 0;
 }
-
 
 .bxd {
 	margin: 10px 0 0 0;
@@ -243,15 +242,6 @@ dl.menu h3 {
 .top_logo { /* haiducel */
 	width: 200px;
 }
-/*
-.top_search input {
-	padding: 6px 0.5em 4px;
-	width: 192px;
-	height: 19px;
-	outline: none;
-	border: none;
-	font-size: 15px;
-}*/
 
 .top_search input {
 	padding: 6px 0.5em 4px;
@@ -558,17 +548,6 @@ button.btn_cart span {
 	background: url('/css-themes/108401/img/bg/bg_li.gif') no-repeat 100% 0;
 }
 
-/*
-.top_search input {
-	background: url('/css-themes/108401/img/bg/bg_top_search.gif') repeat-x 0 0 !important;
-	color: #999999;
-}*/
-/*
-.top_search input {
-	background: url('//cdn.shopmania.biz/files/s5/122888552/content/bg_top_search_400x35.gif') repeat-x 0 0 !important;
-	color: #999999;
-}*/
-
 .top_search input {
     background: none;
 }
@@ -580,7 +559,6 @@ button.btn_cart span {
 
 
 .top_search button.btn_search {
-	/*background: url('/css-themes/108401/img/btn/btn_search.gif') no-repeat 0 0;*/
 	background: url('//cdn.shopmania.biz/files/s5/122888552/content/search-loop-1.png') no-repeat 10px 8px;
 	background-color: #0db8f8;
 	height: 40px;
@@ -591,12 +569,6 @@ button.btn_cart span {
 	border-bottom-right-radius: 2px;
 }
 
-
-/*
-.top_search button.btn_search:hover {
-	background: url('/css-themes/108401/img/btn/btn_search.gif') no-repeat 0 -29px;
-}
-*/
 
 .i_curr {
 	background-image: url('/css-themes/108401/img/ico/i_curr.png');
@@ -632,24 +604,11 @@ button.btn_cart span {
 
 /* adjustments for haiducel */
 
-/*
-.doc4 {
-    width: 97em;
-}*/
 
 
 #top_social_icons {
     display: none;
 }
-
-/* btn_cart_main #377*/
- /*button span, button.btn span {
-    position: relative;
-    display: block;
-    white-space: nowrap;
-    padding-left: 80px;
-    padding-right: 80px;
-}*/
 
 #newsletter_submit button span, button.btn span {
     width: 145px;
@@ -686,20 +645,15 @@ button.btn_cart span {
 }
 
 .top_search input.ac_input:focus {
-	/*background-color: aliceblue !important;	
-    outline: none !important;*/
     border:1px solid #0db8f8;
     border-right: none;
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
-    /*box-shadow: 0 0 10px #719ECE;*/
 }
 
 /* BUTON CAUTARE AVANSATA */
 .top_search #input_container a {
     display: block;
-    /*height: 34px;
-    padding: 2px 30px;*/
     width: 40px;
     color: white;
     background-color: #AEE3F7;
@@ -713,18 +667,9 @@ button.btn_cart span {
 .top_search #input_container br {
 	display: none;
 }
-/*
-.top_search #input_container {
-	width: 600px;
-}
-*/
 
 .side_bx_categories .menu dt, dd {
     padding: 0px;
-}
-
-.side_bx_categories .menu a:visited {
- /*   color: #cccccc;*/
 }
 
 
@@ -736,8 +681,7 @@ button.btn_cart span {
     background-color: #f7f7f7!important;
 }
 .side_bx_categories .cat_on a:hover {
-     text-decoration: none!important;
-    /*border: 1px solid #0db8f8!important;*/
+    text-decoration: none!important;
     border-radius: 2px;
     background-color: #f7f7f7!important;
     border: 1p solid #f7f7f7;
@@ -749,27 +693,18 @@ button.btn_cart span {
 }*/
 
 .side_bx_categories .menu dt a {
-    	/*background: url('/css-themes/108401/img/other/footer_icon4.png') no-repeat 0 0;
-    	
-    	padding-left: 35px;*/
-    	/*border: 0px solid #cccccc;*/
-    	/*padding-top: 6px;*/
-    	border:1px solid transparent;
-    /*	border-left:6px solid transparent;*/
-    /*	border-top: 1px solid #e8e8e8; */
-       /* background: #F4F8FB;*/
-       text-decoration: none;
+    border:1px solid transparent;
+    text-decoration: none;
 }
 
 /* AUTO */
 .side_bx_categories .menu dt#cat_31 a {
-    	background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px 6px; 
+    background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px 6px; 
 }
 
 /* IMBRACAMINTE FETE */
 .side_bx_categories .menu dt#cat_130 a {
-        background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -184px; 
-    	/* background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -865px; */
+    background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -184px; 
 }
 
 /* IMBRACAMINTE BAIETI */
@@ -784,7 +719,6 @@ button.btn_cart span {
 
 /* LEAGANE */
 .side_bx_categories .menu dt#cat_126 a {
-    	/* background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -335px; */
     	 background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -545px;
 }
 
@@ -792,7 +726,6 @@ button.btn_cart span {
 .side_bx_categories .menu dt#cat_46 a {
     	background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -386px; 
 }
-
 
 /* ACCESORII PATUTURI */
 .side_bx_categories .menu dt#cat_52 a {
@@ -809,13 +742,10 @@ button.btn_cart span {
     	background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -506px; 
 }
 
-
 /* MAMICI */
 .side_bx_categories .menu dt#cat_122 a {
     	background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -588px;
-    /*	background: url('//cdn.shopmania.biz/files/s5/122888552/content/haiducel_sprite.png') no-repeat 0px -625px; */
 }
-
 
 /* HAINE BEBE */
 .side_bx_categories .menu dt#cat_127 a {
@@ -845,30 +775,15 @@ button.btn_cart span {
 
 
 .side_bx_categories .menu dt a:hover, .side_bx_categories .menu dd a:hover{
-/*    	color: white;
-    	background-color: #0db8f8;
-  */  	
-    /*color: #0db8f8;*/
+
     color: black;
-    
-    border: 1px solid #0db8f8; /* #AEE9FF; */
-    /*
-    border-bottom: 1px solid #0db8f8;
-    border-top: 1px solid #0db8f8;
-    border-right: 1px solid #0db8f8;
-    border-left:6px solid #0db8f8; */
-    
+    border: 1px solid #0db8f8;     
     background: white;
-    
-    border-radius: 2px;
-    /*
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;*/
-    
+    border-radius: 2px;   
     text-decoration: none;
 }
 
-.side_bx_categories .menu dt a:link /*,.side_bx_categories .menu dd a:link*/ {
+.side_bx_categories .menu dt a:link {
     display: block;
     width: 163px;    /* category menu items width */
     height: auto;
@@ -897,7 +812,6 @@ button.btn_cart span {
     	border:1px solid #0db8f8;
 }
 
-
 /* page navigation buttons 1,2 ... */
 ul.nav .navigation_off span, ul.nav .navigation_text b, ul.nav a.navigation_on span {
     margin-right: 14px;
@@ -909,20 +823,7 @@ ul.nav li a, ul.nav li b, ul.nav li span {
 }
 
 
-/* subcategories */
-/*
-.side_bx_categories .menu dd a { 
-    	display: block;
-    	width: 145px;
-   	    height: auto;
-    	padding-left: 30px;
-    	line-height: 28px;
-        font-size: 13px;
-    	border:1px solid transparent;
-}
-*/
-
-/*empty lines for easy editing
+/*empty lines for easy editing inside shopmania's editor
   empty line
   empty line
   empty line
