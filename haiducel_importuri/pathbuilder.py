@@ -12,7 +12,7 @@ class PathBuilder(object):
     allImagesFolder = ""
     mainImagesFolder = ""
     feedFileNamePath = ""
-      
+    configFile = ""  
     
 
     def __init__(self, code):
@@ -25,4 +25,5 @@ class PathBuilder(object):
         self.allImagesFolder =  os.path.join("_ imagini noi", "mari neprocesate")
         self.mainImagesFolder = os.path.join("_ imagini noi", "mici neprocesate")
         self.feedFileNamePath = os.path.join(code, "feed" + code + ".csv")
+        self.configFile = os.path.join(os.getcwd(), "config", "config" + code + ".cfg");
 

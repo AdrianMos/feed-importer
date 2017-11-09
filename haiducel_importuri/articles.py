@@ -19,6 +19,8 @@ from _ast import Try
 from bs4 import BeautifulSoup, NavigableString
 import bleach
 import re
+import requests
+import configparser
 
 
 class Articles(object):
@@ -495,22 +497,40 @@ class Articles(object):
         
       
 class NANArticles(Articles):
-     
+    
+    username = ""
+    password = ""
+    downloadUrl = ""
+    
+    def __init__(self, code):
+        super().__init__(code)
+                
+        config = configparser.ConfigParser()
+        config.read(self.paths.configFile)
+        self.username = config.get('Download', 'username')
+        self.password = config.get('Download', 'password')
+        self.downloadUrl = config.get('Download', 'url')
+        
+        print(self.username + self.password)
+        
+        
     
     def DownloadFeed(self):
     
-        print("*** Descarcare feed NAN...")
-        response = urllib.request.urlopen('http://www.importatorarticolecopii.ro/feeds/general_feed.php')  
+        print("*** Descarcare feed NAN...")        
         
-        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape",'ignore')
-        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
+        response = requests.get(self.downloadUrl,
+                                verify=False, 
+                                auth=(self.username, self.password))
+
+        feedData = response.text 
         
         with open(self.paths.feedFileNamePath, 'wb') as textfile:
-            textfile.write(feedData)
+            textfile.write(bytes(feedData, 'UTF-8'))
             textfile.close()
         
         print("    Feed NAN descarcat.")
-        #print(feedData)
+
 
     def Import(self):
          '''
