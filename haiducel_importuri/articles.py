@@ -509,10 +509,7 @@ class NANArticles(Articles):
         config.read(self.paths.configFile)
         self.username = config.get('Download', 'username')
         self.password = config.get('Download', 'password')
-        self.downloadUrl = config.get('Download', 'url')
-        
-        print(self.username + self.password)
-        
+        self.downloadUrl = config.get('Download', 'url')       
         
     
     def DownloadFeed(self):
