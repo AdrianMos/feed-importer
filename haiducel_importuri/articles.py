@@ -557,7 +557,8 @@ class NANArticles(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        if article.available.lower()=="produs pe stoc" or article.available.lower()=="comanda speciala":
+        activeVariants = ["produs pe stoc", "comanda speciala"]
+        if article.available.lower() in activeVariants:
             return "Active"
         else:
             return "Inactive"
@@ -676,8 +677,8 @@ class BEBArticles(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        
-        if article.available.lower()=="stoc suficient" or article.available.lower()=="stoc limitat":
+        activeVariants = ["stoc suficient", "stoc limitat"]
+        if article.available.lower() in activeVariants:
             return "Active"
         else:
             return "Inactive"
@@ -781,7 +782,8 @@ class HDREArticles(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        if article.available.lower()=="1":
+        activeVariants = ["1"]
+        if article.available.lower() in activeVariants:
             return "Active"
         else:
             return "Inactive"
@@ -838,8 +840,8 @@ class HaiducelArticles(Articles):
          
          if (not os.path.isfile(self.paths.feedFileNamePath)):
              logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' + self.paths.feedFileNamePath)
+             print("\nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
              sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
-         
           
          with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
              
@@ -870,12 +872,34 @@ class BebeBrandsArticles(Articles):
     '''
     Handles the BebeBrands articles (HBBA)
     '''
+    downloadUrl = ""
+    
+    def __init__(self, code):
+        super().__init__(code)
+                
+        config = configparser.ConfigParser()
+        config.read(self.paths.configFile)
+        self.downloadUrl = config.get('Download', 'url')   
+        self.delimiter =  config.get('Import', 'delimiter') 
+        self.quotechar =  config.get('Import', 'quotechar')           
+        
+        self.columnNo = {}
+        self.columnNo["id"]= config.getint('Import', 'id')
+        self.columnNo["title"] = config.getint('Import', 'title')
+        self.columnNo["price"] = config.getint('Import', 'price')
+        self.columnNo["pricePromo"] = config.getint('Import', 'pricePromo')
+        self.columnNo["description"] = config.getint('Import', 'description')
+        self.columnNo["available"] = config.getint('Import', 'available')
+        self.columnNo["category"] = config.getint('Import', 'category')
+        self.columnNo["image0"] = config.getint('Import', 'image0')
+        self.columnNo["image1"] = config.getint('Import', 'image1')
+    
         
     def DownloadFeed(self):
        
         print("*** Descarcare feed BebeBrands HBBA...")
-        response = urllib.request.urlopen('http://www.bebebrands.ro/wp-content/themes/Emporium/feed-produse-csv.php')
-                
+        response = urllib.request.urlopen(self.downloadUrl)
+                      
         feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
         feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
      
@@ -891,49 +915,61 @@ class BebeBrandsArticles(Articles):
         Import articles from csv file
         '''    
         print ("    Fisier de import: " + self.paths.feedFileNamePath)
-        
+               
         with open(self.paths.feedFileNamePath, "rt") as csvfile:
-             reader = csv.DictReader(csvfile, delimiter=',', quotechar='\'')
+             
+             if self.quotechar!="":
+                reader = csv.reader(csvfile, delimiter=self.delimiter, quotechar=self.quotechar)
+             else:
+                reader = csv.reader(csvfile, delimiter=self.delimiter)
+            
                       
              for row in reader:
                            
-                  pret = str(row["price"]).replace(".", "").replace(",", ".")
-                  pretPromo = str(row["specialprice"]).replace(".", "").replace(",", ".")
+                  
+                  pret = row[self.columnNo["price"]]
+                  pretPromo = row[self.columnNo["pricePromo"]]
                   if pretPromo=="":
                       pretPromo="0"
-                  greutate = 0 #nu exista informatia in feed
-                  
-                  
-                  #Extrage categoria din "permalink"
-                  #    permalink = http://www.bebebrands.ro/igiena-si-siguranta/summer-infant-19176-suport-de-baita-deluxe-cu-bara-de-jucarii
-                  try:
-                      categorie = str(row["permalink"])[25:]
-                      categorie = categorie[:categorie.find("/")].replace("-"," ")
-                  except:
-                      categorie=""
                          
                   
                   #split the images by "g," because some image names contain "," and we cannot split only by comma
                   # afterwards "g" has to be added to the split image names          
-                  images = [x.strip() +"g" for x in str(row["images"]).split('g,')]
+                  #images = [x.strip() +"g" for x in str(row["images"]).split('g,')]
                   
-                  if images[images.__len__()-1]=="g":
-                      images[images.__len__()-1]=""
-               
-                  if row["id"]!="":
+                  
+                  #if images[images.__len__()-1]=="g":
+                  #    images[images.__len__()-1]=""
+                  images = [row[self.columnNo["image0"]], 
+                            row[self.columnNo["image1"]], "", "", "", "", "", "", "", "", "", ""]
+                  
+                  
+                  # print ("Articol: " + row[ self.columnNo["title"]])
+                  print ("price: " + row[ self.columnNo["price"]])
+                  #print ("available: " + row[ self.columnNo["available"]])
+                  # print ("cat: " + row[ self.columnNo["category"]])
+                  # print ("des: " + row[ self.columnNo["description"]])
+                  # print ("img: " + row[ self.columnNo["image0"]])
+                  # print ("available: " + row[ self.columnNo["available"]])
+                  
+                  
+                  
+                  if row[self.columnNo["id"]]!="":
                       #Adauga articolul
-                      self.articleList.append( Article(id = row["id"],
-                                                  title = row["title"],
-                                                  price = pret,
-                                                  pricePromo = pretPromo,
-                                                  category = categorie,
-                                                  available = row["availability"],
-                                                  description = row["description"],
-                                                  weight = greutate,
-                                                  supplier = "HBBA",
-                                                  images = images)) 
+                      self.articleList.append( Article(id = row[self.columnNo["id"]],
+                                                       title = row[ self.columnNo["title"]],
+                                                       price = pret,
+                                                       pricePromo = pretPromo,
+                                                       category = row[ self.columnNo["category"]],
+                                                       available = row[ self.columnNo["available"]],
+                                                       description = row[ self.columnNo["description"]],
+                                                       weight = 0, #no info in feed
+                                                       supplier = "HBBA",
+                                                       images = images))
+                  
                   else:
-                      print("     * articol ignorat, lipseste modelul (id): ", row["title"])         
+                      print("     * articol ignorat, lipseste modelul (id): ", row[self.columnNo["title"]])    
+
                  
         return -1            
           
@@ -943,7 +979,8 @@ class BebeBrandsArticles(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        if article.available.lower()=="yes":
+        activeVariants = ["stoc suficient", "stoc limitat"]
+        if article.available.lower() in activeVariants :
             return "Active"
         else:
             return "Inactive"
@@ -961,24 +998,24 @@ class BebeBrandsArticles(Articles):
         newImageNames = [article.images[0]]
         newImageNames.extend(article.images)          
         
-        for i in range(0, len(newImageNames)):
-            fullPath = newImageNames[i].replace("//", "/")
+        # for i in range(0, len(newImageNames)):
+            # fullPath = newImageNames[i].replace("//", "/")
             
-            if fullPath=="":
-                newPath = ""
-            else:
-                path,file=os.path.split(fullPath)
-                extension = fullPath[fullPath.rfind("."):]
+            # if fullPath=="":
+                # newPath = ""
+            # else:
+                # path,file=os.path.split(fullPath)
+                # extension = fullPath[fullPath.rfind("."):]
                 
                 #Extract all characters until second underscore.                
-                if i==0:
+                # if i==0:
                     #Path to small image, append an _s
-                    newPath = "HBBA/" + file[:file.rfind(".")] + "_s" + extension
-                else:
-                    newPath = "HBBA/" + file
+                    # newPath = "HBBA/" + file[:file.rfind(".")] + "_s" + extension
+                # else:
+                    # newPath = "HBBA/" + file
                     
-            newImageNames[i] = newPath
-        
+            # newImageNames[i] = newPath
+        #
         # Extend the list to the maximum elements
         for i in range(len(newImageNames), 13):
             newImageNames.append("")
@@ -1229,8 +1266,8 @@ class KidsDecorArticles(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        
-        if article.available.lower()=="in stock" or article.available.lower()=="2-3 zile" or article.available.lower()=="pre-comanda" :
+        activeVariants = ["in stock", "2-3 zile", "pre-comanda"]
+        if article.available.lower() in activeVariants :
             return "Active"
         else:
             return "Inactive"
@@ -1346,7 +1383,8 @@ class HubnersArticles(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        if article.available.lower()=="in stoc":
+        activeVariants = ["in stoc"]
+        if article.available.lower() in activeVariants:
             return "Active"
         else:
             return "Inactive"
