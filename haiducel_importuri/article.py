@@ -4,7 +4,7 @@ class Article(object):
     """Holds article information"""
     
             
-    def __init__(self, id, title, price, available, category, supplier, subcategory="", images=[""]*13, description="", weight=0, quantity=1, pricePromo=0):  
+    def __init__(self, id, title, price, available, initialCategory, category, supplier, subcategory="", images=[""]*13, description="", weight=0, quantity=1, pricePromo=0):  
         self.id = id.strip()
         self.title = title.strip()
         self.price = float(str(price).strip())
@@ -13,6 +13,7 @@ class Article(object):
         self.quantity = str(quantity).strip()
         self.weight = str(weight).strip()
         self.available = available.strip()
+        self.initialCategory = initialCategory.strip()
         self.category = category.strip()
         self.subcategory = subcategory.strip()
         self.supplier = supplier.strip()

@@ -51,16 +51,59 @@ class Articles(object):
                 sys.exit("Nu se poate crea folderul pentru acest cod: " + ex.reason)
                 logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
                 raise
-            
-             
+        
+        
+        self.LoadParametersFromConfigFile(self.paths.configFile)
+       
+        print("mapping file: " + self.mappingFile)
+        self.categoryMap = self.ReadMapFromFile(self.mappingFile)
+    
+    def LoadParametersFromConfigFile(self, file):
+        ''' 
+        Reads configuration parameters from the configuration file
+        '''
+        config = configparser.ConfigParser()
+        config.read(file)
+        
+        self.downloadUrl = config.get('Download', 'url')   
+        self.username = config.get('Download', 'username')
+        self.password = config.get('Download', 'password')
+        self.delimiter = config.get('Import', 'delimiter') 
+        self.quotechar = config.get('Import', 'quotechar') 
+        
+        self.mappingFile = os.path.join("config", 
+                                        config.get('Import', 'categoryMappingFile'));
+                  
+        
     def DownloadFeed(self):
         '''
         Downloads articles feeds
         '''
-        raise NotImplementedError
-        print("*** Functionalitatea de download nu a fost implementata.")
-        pass
-    
+        print("*** Descarcare feed " + self.code + "...")     
+                
+        if self.username != "": 
+        #authentication required
+            response = requests.get(self.downloadUrl,
+                                verify=False, 
+                                auth=(self.username, self.password))
+            feedData = response.text 
+            
+            with open(self.paths.feedFileNamePath, 'wb') as textfile:
+                textfile.write(bytes(feedData, 'UTF-8'))
+                textfile.close()
+        else:
+            response = urllib.request.urlopen(self.downloadUrl)
+                          
+            feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
+            feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
+         
+            with open(self.paths.feedFileNamePath, "wb") as textfile:
+                textfile.write(feedData)
+                textfile.close()
+            
+        print("    Feed " + self.code + " descarcat.")
+        
+            
     def ArticlesCount(self):
         return self.articleList.__len__()
     
@@ -240,7 +283,67 @@ class Articles(object):
             return 0
         else:
             return result
+    
+    def GetMappingKey(self, article):
+        '''
+        Returns a mapping key, used for remapping an article.
+        The mapping key is used for finding a section for an article in the mapping configuration file.
+        :param article: article for which the mapping key is returned
+        '''
+        return article.initialCategory.lower()
         
+    def ReadMapFromFile(self, file):
+        config = configparser.RawConfigParser(allow_no_value=True)
+        config.read(file)    
+        sections = config.sections()
+        print(" sections: " + str(sections))
+        
+        #create mapping dictionary
+        map = {}
+        for section in sections:
+            print(" section: " + str(section))
+            for key in config[section]: 
+              print("   ->key: " + key)
+              strippedKey = "".join(key.split())
+              map[strippedKey] = section
+        
+        return map
+        
+    def FindSectionForKey(self, searchKey, map):          
+        searchKeyTrimedSpaces = "".join(searchKey.split())
+        fallbackValue = ""
+        section = map.get(searchKeyTrimedSpaces, fallbackValue)
+        return section
+        
+    def UpdateArticleBasedOnMappedSection(self, article, section):
+        ''' The section to which the article has been mapped to
+            includes the new category & subcategory [category#subcategory]
+            Extract the category & subcategory and update the article members.
+        '''
+        if section=="":
+            article.category = "_Neclasificate"
+            article.subcategory = ""
+           
+            print("      Articol neclasificat")
+            print("        -> Denumire: " + article.title)
+            print("        -> Cheie necunoscuta:" + self.GetMappingKey(article))  
+        else:
+            splitSection = section.split("#")
+            article.category = splitSection[0]
+            article.subcategory = splitSection[1]
+            #print("*** category:" + article.category + " subcategory:" + article.subcategory)
+        
+        return article
+      
+    def ComputeCategory(self, article):
+        '''
+        Computes the category for the current article.
+        '''        
+        section = self.FindSectionForKey(self.GetMappingKey(article), 
+                                         self.categoryMap)  
+        article = self.UpdateArticleBasedOnMappedSection(article, section)
+        
+        return article
         
     def ComputeAvailability(self, article):
         '''
@@ -250,206 +353,6 @@ class Articles(object):
         return "Active"
            
     
-    def ComputeCategory(self, article):
-        '''
-        Computes the category for the current article.
-        '''
-        categorie = article.category.lower()
-        
-        '''
-        First map element is the searched Key element; 
-        second and third elements are the new Category and Subcategory.
-        '''
-        
-        map = [["rucioare copii",               "_CARUCIOARE",          "2 in 1"],
-			   ["crucioare|crucioare multifuncionale 2 in 1",                     "_CARUCIOARE",          "2 in 1"],
-               ["rucioare pentru copii",        "_CARUCIOARE",          "2 in 1"],
-               ["rucioare cu landou",           "_CARUCIOARE",          "3 in 1"],
-               ["rucioare 3 in 1",              "_CARUCIOARE",          "3 in 1"],
-               ["rucioare",                     "_CARUCIOARE",          "2 in 1"],
-                          
-               
-               ["cosulete auto",                "_Cosulete AUTO",       ""],
-               ["scaun - cos auto",             "_Cosulete AUTO",       ""],
-               ["cos - auto",                   "_Cosulete AUTO",       ""],        
-               ["scaun auto",                   "_Scaune AUTO",         ""],
-                      
-               ["inaltatoare auto",             "_Inaltatoare AUTO",    ""],
-               ["inaltator auto",               "_Inaltatoare AUTO",    ""],
-               
-               ["marsupii",                     "_PLIMBARE COPII",    "Marsupii, portbebe"],
-               ["ham de siguranta",             "_PLIMBARE COPII",    "Marsupii, portbebe"],
-               ["ham pentru copii",             "_PLIMBARE COPII",    "Marsupii, portbebe"],
-               ["portbebe",                     "_PLIMBARE COPII",    "Marsupii, portbebe"],
-               
-                               
-               ["scaune auto",                  "_Scaune AUTO",         ""],
-               ["scaune de masa",               "_Scaune de MASA",      ""],
-               ["scaun de masa",                "_Scaune de MASA",      ""],
-               ["scaun masa",                   "_Scaune de MASA",      ""],
-                
-               ["mobiliere camere copii",       "_CAMERA copilului",    "Mobilier"],
-               ["fotolii pentru copii",         "_CAMERA copilului",    "Mobilier"],
-               ["fotolii din burete",           "_CAMERA copilului",    "Mobilier"],
-               ["mobilier copii",               "_CAMERA copilului",    "Mobilier"],
-               ["bucatarii si accesorii",       "_CAMERA copilului",    "Mobilier"],
-               ["bucatarii din lemn pentru copii", "_CAMERA copilului",    "Mobilier"],
-                             
-              
-               ["lenjerie de pat",              "_CAMERA copilului",    "Lenjerie patut"],
-               ["set lenjerie",                 "_CAMERA copilului",    "Lenjerie patut"],
-               ["perna",                        "_CAMERA copilului",    "Lenjerie patut"], 
-               ["lenjerie",                     "_CAMERA copilului",    "Lenjerie patut"], 
-               ["patura",                       "_CAMERA copilului",    "Lenjerie patut"],  
-               ["saci de dormit",               "_CAMERA copilului",    "Lenjerie patut"],  
-               ["sac de dormit",                "_CAMERA copilului",    "Lenjerie patut"],            
-               ["patuturi din lemn",            "_CAMERA copilului",    "Patuturi din lemn"],
-               ["patut din lemn",               "_CAMERA copilului",    "Patuturi din lemn"],
-               ["patut pliabil",                "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["pat pliant",                   "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["pat pliabil",                  "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["patuturi voiaj si tarcuri",    "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["patuturi in forma de masina",  "_CAMERA copilului",    "Patuturi in forma de masina"],               
-               ["patut",                        "_CAMERA copilului",    "Patuturi voiaj si tarcuri"],
-               ["spatii de joaca",              "_CAMERA copilului",    "Spatii de joaca"],
-               ["masute si scaune",             "_CAMERA copilului",    "Spatii de joaca"],
-               ["centre de activitate",         "_CAMERA copilului",    "Spatii de joaca"],
-               ["tarc",                         "_CAMERA copilului",    "Spatii de joaca"],
-               ["saritoare",                    "_CAMERA copilului",    "Spatii de joaca"],
-               ["paturici",                     "_CAMERA copilului",    "Saci dormit si paturici"],
-             
-               
-               ["comode",                       "_CAMERA copilului",    "Mobilier"],
-               ["carusel",                      "_CAMERA copilului",    "Carusele"],
-               ["saltele",                      "_CAMERA copilului",    "Saltele patut"],
-               ["saltea",                       "_CAMERA copilului",    "Saltele patut"],
-               ["blat si saltea de infasat",    "_CAMERA copilului",    "Saltele infasat"],
-               ["saltelute de infasat",         "_CAMERA copilului",    "Saltele infasat"],
-               ["blat de infasat",              "_CAMERA copilului",    "Saltele infasat"],
-               ["saltea de infasat",            "_CAMERA copilului",    "Saltele infasat"],
-               
-               ["balansoare si leagane",        "_BALANSOARE si leagane",  ""],
-               ["balansoar",                    "_BALANSOARE si leagane",  ""],
-               ["leagane",                      "_BALANSOARE si leagane",  ""],
-               
-               ["incalzitor biberon",           "_IGIENA si siguranta",  "Incalzitor si sterilizator"],
-               ["sterilizator",                 "_IGIENA si siguranta",  "Incalzitor si sterilizator"],
-               
-               ["monitoare de respiratie",      "_IGIENA si siguranta",  "Inlterfoane si video"],
-               ["interfoane",                   "_IGIENA si siguranta",  "Interoane si video"],
-               
-               ["igiena",                       "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["siguranta copilului",          "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["bariere pentru patuturi",      "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["set de ingrijire",             "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["semn de avertizare",           "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["semne de avertizare",          "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["aspiratoare nazale",           "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["aspirator nazal",              "_IGIENA si siguranta",  "Protectie si ingrijire"],
-               ["inele gingivale",              "_IGIENA si siguranta",  "Protectie si ingrijire"],              
-
-               ["pompe de san",                 "_IGIENA si siguranta",  "Nutritie"],
-               ["pompa de san",                 "_IGIENA si siguranta",  "Nutritie"],
-               ["pompe pentru san",             "_IGIENA si siguranta",  "Nutritie"],
-               ["pompa san",                    "_IGIENA si siguranta",  "Nutritie"],
-               ["recipient stocarea laptelui",  "_IGIENA si siguranta",  "Nutritie"],
-               ["recipient stocarea laptelui",  "_IGIENA si siguranta",  "Nutritie"],
-               ["biberoane",                    "_IGIENA si siguranta",  "Nutritie"],
-               ["bavetica",                     "_IGIENA si siguranta",  "Nutritie"],
-               ["robot bucatarie",              "_IGIENA si siguranta",  "Nutritie"],
-               
-               ["aerosol",                      "_IGIENA si siguranta",  "Aerosol si umidificator"],
-               ["aersol",                       "_IGIENA si siguranta",  "Aerosol si umidificator"],
-               ["umidificator",                 "_IGIENA si siguranta",  "Aerosol si umidificator"],
-
-               ["termometr",                    "_IGIENA si siguranta",  "Termometre"],
-               
-                              
-               ["articole pentru baie",         "_IGIENA si siguranta",  "Baie"],
-               ["cadita",                       "_IGIENA si siguranta",  "Baie"],
-               ["cadite",                       "_IGIENA si siguranta",  "Baie"],
-               
-               
-               ["cantare elect",                "_IGIENA si siguranta",  "Cantare"],
-               ["cantar elect",                 "_IGIENA si siguranta",  "Cantare"],
-               ["cantare mecanice",             "_IGIENA si siguranta",  "Cantare"],
-               ["cantare pentru copii",         "_IGIENA si siguranta",  "Cantare"],
-               ["cantare copii",                "_IGIENA si siguranta",  "Cantare"],
-               
-               ["accesorii ingrijire copii",    "_IGIENA si siguranta",  ""],
-               ["manichiura si pedichiura bebe","_IGIENA si siguranta",  ""],             
-               
-               
-               ["leagane de gradina",           "_BALANSOARE si leagane",  ""],
-                              
-               ["genti pentru mamici",          "_Viitoare MAMICI",  "Genti mamici"],
-               ["geanta carucior",              "_Viitoare MAMICI",  "Genti mamici"],
-               ["mmici|geni",                   "_Viitoare MAMICI",  "Genti mamici"],
-               ["gentute",                      "_Viitoare MAMICI",  "Genti mamici"],
-               ["genti pentru scutece",         "_Viitoare MAMICI",  "Genti mamici"],
-               
-               
-               
-                
-               ["triciclet",                    "_PLIMBARE copii",  "Triciclete si trotinete"],
-               ["trotinet",                     "_PLIMBARE copii",  "Triciclete si trotinete"],
-               ["biciclet",                     "_PLIMBARE copii",  "Biciclete"],
-               ["masin",                        "_PLIMBARE copii",  "Masinute"],
-               ["tractoare",                    "_PLIMBARE copii",  "Masinute"],
-               ["tractore cu pedale",           "_PLIMBARE copii",  "Masinute"],
-               ["vehicule pentru copii",        "_PLIMBARE copii",  "Masinute"],
-               
-               
-               
-               ["premergatoare",                "_PLIMBARE copii",  "Premergatoare"],
-               ["premergator",                  "_PLIMBARE copii",  "Premergatoare"],
-               ["saniute",                      "_PLIMBARE copii",  "Saniute"],
-               ["sanie",                        "_PLIMBARE copii",  "Saniute"],
-              
-               ["jocuri",                       "_JUCARII si jocuri",  ""],
-               ["jucari",                      "_JUCARII si jocuri",  ""],
-               ["jucrii",                       "_JUCARII si jocuri",  ""],
-               ["jeep",                         "_JUCARII si jocuri",  ""],
-               ["seturi de constructii",        "_JUCARII si jocuri",  ""],
-               ["piste si garaje",              "_JUCARII si jocuri",  ""],
-               ["joaca",                        "_JUCARII si jocuri",  ""],
-               ["cort",                         "_JUCARII si jocuri",  ""],
-               ["papusi",                       "_JUCARII si jocuri",  ""],
-               ["trenuri",                      "_JUCARII si jocuri",  ""],
-               ["seturi de bile colorate",      "_JUCARII si jocuri",  ""],
-               
-               
-               ["scutece",                      "_DESTERS",            ""],
-               ["olita",                        "_DESTERS",            ""],
-               ["reductor capac wc",            "_DESTERS",            ""],
-               ["suzete",                       "_DESTERS",            ""],
-               ["cana",                         "_DESTERS",            ""],
-               ["lingurite",                    "_DESTERS",            ""],
-               ["servetele",                    "_DESTERS",            ""],
-               
-               ]
-                 
-        
-        # Try to categorize the articles by the supplier's category
-        #   Go through the map and check if the first element is included in the category
-        for item in map:
-            # Return the new category and subcategory if the element is included (second and third element of the map)
-            if item[0] in categorie:
-                return (item[1], item[2])
-        
-        
-        title = article.title.lower()
-               
-        # If the article could not be chategorized so far, try to cathegorize them by title
-        for item in map:
-            # Return the new category and subcategory if the element is included (second and third element of the map)
-            if item[0] in title:
-                return (item[1], item[2])
-               
-        print("      * categorie necunoscuta:" + categorie + ". Articol neclasificat. Denumire: " + article.title)  
-        logging.warning("ComputeCategory: categorie necunoscuta: <" + categorie + ">. Articol neclasificat: " + article.title)
-        return ("_Neclasificate", "")
-      
     def ComputeImages(self, article):
         '''
         Computes the new paths for images.
@@ -481,10 +384,10 @@ class Articles(object):
         for article in self.articleList:
             article.price        = self.ComputePrice(article)
             article.available    = self.ComputeAvailability(article)
-            article.category, article.subcategory = self.ComputeCategory(article)
             article.imagesNew    = self.ComputeImages(article)
             article.description  = self.ComputeDescription(article)
-            #print (article.description)
+            article = self.ComputeCategory(article)
+            
     
     def FilterBySupplier(self, supplier):
         
@@ -498,37 +401,6 @@ class Articles(object):
       
 class NANArticles(Articles):
     
-    username = ""
-    password = ""
-    downloadUrl = ""
-    
-    def __init__(self, code):
-        super().__init__(code)
-                
-        config = configparser.ConfigParser()
-        config.read(self.paths.configFile)
-        self.username = config.get('Download', 'username')
-        self.password = config.get('Download', 'password')
-        self.downloadUrl = config.get('Download', 'url')       
-        
-    
-    def DownloadFeed(self):
-    
-        print("*** Descarcare feed NAN...")        
-        
-        response = requests.get(self.downloadUrl,
-                                verify=False, 
-                                auth=(self.username, self.password))
-
-        feedData = response.text 
-        
-        with open(self.paths.feedFileNamePath, 'wb') as textfile:
-            textfile.write(bytes(feedData, 'UTF-8'))
-            textfile.close()
-        
-        print("    Feed NAN descarcat.")
-
-
     def Import(self):
          '''
          Import articles from csv file
@@ -546,6 +418,7 @@ class NANArticles(Articles):
                                                   price = row[3],
                                                   weight = row[5],
                                                   available = row[4],
+                                                  initialCategory = row[7],
                                                   category = row[7],
                                                   supplier = "NAN",
                                                   images = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]]))
@@ -599,23 +472,6 @@ class NANArticles(Articles):
 
 class BEBArticles(Articles):
      
-    def DownloadFeed(self):
-    
-        print("*** Descarcare feed BEBEX...")
-        # response = urllib.request.urlopen('http://www.bebex.ro/feed/datafeed_produse_general_csv.php')
-        response = urllib.request.urlopen('http://www.bebex.ro/datafeed/complete/csv/')
-        
-        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
-        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
-       
-        
-        with open(self.paths.feedFileNamePath, 'wb') as textfile:
-            textfile.write(feedData)
-            textfile.close()
-        
-        print("    Feed BEBEX descarcat.")
-        #print(feedData)
-
     def Import(self):
          '''
          Import articles from csv file
@@ -663,6 +519,7 @@ class BEBArticles(Articles):
                                                   pricePromo = pretPromo,
                                                   weight = greutate,
                                                   available = row[27],
+                                                  initialCategory = row[2],
                                                   category = row[2],
                                                   supplier = "BEB",
                                                   images = imagesArray))
@@ -760,6 +617,7 @@ class HDREArticles(Articles):
                                                   title = row["denumire"],
                                                   price = pret,
                                                   pricePromo = pretPromo,
+                                                  initialCategory = row["categoria"],
                                                   category = row["categoria"],
                                                   available = row["stoc"],
                                                   description = row["descriere"],
@@ -855,6 +713,7 @@ class HaiducelArticles(Articles):
                                                   price = row["v_products_price"],
                                                   weight = row["v_products_weight"],
                                                   available = row["v_status"],
+                                                  initialCategory = row["v_categories_name_1_1"] + "#" + row["v_categories_name_2_1"],
                                                   category = row["v_categories_name_1_1"],
                                                   subcategory = row["v_categories_name_2_1"],
                                                   quantity = row["v_products_quantity"],
@@ -879,9 +738,6 @@ class BebeBrandsArticles(Articles):
                 
         config = configparser.ConfigParser()
         config.read(self.paths.configFile)
-        self.downloadUrl = config.get('Download', 'url')   
-        self.delimiter =  config.get('Import', 'delimiter') 
-        self.quotechar =  config.get('Import', 'quotechar')           
         
         self.columnNo = {}
         self.columnNo["id"]= config.getint('Import', 'id')
@@ -893,22 +749,7 @@ class BebeBrandsArticles(Articles):
         self.columnNo["category"] = config.getint('Import', 'category')
         self.columnNo["image0"] = config.getint('Import', 'image0')
         self.columnNo["image1"] = config.getint('Import', 'image1')
-    
-        
-    def DownloadFeed(self):
        
-        print("*** Descarcare feed BebeBrands HBBA...")
-        response = urllib.request.urlopen(self.downloadUrl)
-                      
-        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
-        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
-     
-        with open(self.paths.feedFileNamePath, "wb") as textfile:
-            textfile.write(feedData)
-            textfile.close()
-            
-        print("    Feed BebeBrands descarcat.")
-    
     
     def Import(self):
         '''
@@ -945,9 +786,9 @@ class BebeBrandsArticles(Articles):
                   
                   
                   # print ("Articol: " + row[ self.columnNo["title"]])
-                  print ("price: " + row[ self.columnNo["price"]])
+                  #print ("price: " + row[ self.columnNo["price"]])
                   #print ("available: " + row[ self.columnNo["available"]])
-                  # print ("cat: " + row[ self.columnNo["category"]])
+                  #print ("cat: " + row[ self.columnNo["category"]])
                   # print ("des: " + row[ self.columnNo["description"]])
                   # print ("img: " + row[ self.columnNo["image0"]])
                   # print ("available: " + row[ self.columnNo["available"]])
@@ -960,6 +801,7 @@ class BebeBrandsArticles(Articles):
                                                        title = row[ self.columnNo["title"]],
                                                        price = pret,
                                                        pricePromo = pretPromo,
+                                                       initialCategory = row[ self.columnNo["category"]],
                                                        category = row[ self.columnNo["category"]],
                                                        available = row[ self.columnNo["available"]],
                                                        description = row[ self.columnNo["description"]],
@@ -984,8 +826,9 @@ class BebeBrandsArticles(Articles):
             return "Active"
         else:
             return "Inactive"
-        
-        
+    
+
+    
     def ComputeImages(self, article):
         '''
         Convert image names to our format. 
@@ -1029,21 +872,6 @@ class BabyShopsArticles(Articles):
     Handles the BabyShops articles (HMER)
     '''
         
-    def DownloadFeed(self):
-       
-        print("*** Descarcare feed BabyShops HMER...")
-        response = urllib.request.urlopen('http://shop.unas.eu/ro/admin_export.php?shop_id=9413&format=babyshops.ro')
-                
-        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
-        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
-     
-        with open(self.paths.feedFileNamePath, "wb") as textfile:
-            textfile.write(feedData)
-            textfile.close()
-            
-        print("    Feed BabyShops descarcat.")
-    
-    
     def Import(self):
         '''
         Import articles from csv file
@@ -1079,6 +907,7 @@ class BabyShopsArticles(Articles):
                                                   title = row["Name"],
                                                   price = pret,
                                                   pricePromo = pretPromo,
+                                                  initialCategory = categorie,
                                                   category = categorie,
                                                   available = row["Stock"],
                                                   description = descriere,
@@ -1139,93 +968,9 @@ class BabyShopsArticles(Articles):
             
         return newImageNames
 
-    def ComputeCategory(self, article):
-        '''
-        Computes the category for the current article.
-        '''
-        categorie = article.category.lower()
         
-        '''
-        First map element is the searched Key element; 
-        second and third elements are the new Category and Subcategory.
-        '''
-        
-        map = [["camera copilului|accesorii",	 	 				"_CAMERA copilului", 	"Saci dormit si paturici"],
-               ["jucrii|covorae de joac",							"_CAMERA copilului",  	"Spatii de joaca"],
-               ["ptuuri pliabile",				  					"_CAMERA copilului",		"Patuturi voiaj si tarcuri"],
-               ["jucrii|carusele muzicale",		  					"_CAMERA copilului",		"Carusele"],
-               
-               ["crucioare|accesorii carucioare",    				"_PLIMBARE COPII",   	"Marsupii, portbebe" ],
-               ["marsupii",    										"_PLIMBARE COPII",   	"Marsupii, portbebe" ],
-               
-               ["crucioare|carucioare multifunctionale 3 in 1",		"_CARUCIOARE",		  	"3 in 1"],
-               ["crucioare|carucioare nou-nascuti",					"_CARUCIOARE",		  	"Sport"],
-               ["crucioare|crucioare sport",						"_CARUCIOARE",		  	"Sport"],
-               ["crucioare|crucioare multifuncionale 2 in 1",		"_CARUCIOARE",		  	"2 in 1"],
-               ["crucioare|crucioare pentru gemeni",				"_CARUCIOARE",		  	"Gemeni"],
-              
-               ["scaune auto",                   					"_Scaune AUTO",         ""],
-               ["scaune de mas",                  					"_Scaune de MASA",      ""],
-               
-               ["camera copilului|paturici",                        "_CAMERA copilului",    "Lenjerie patut"],  
-               ["camera copilului|lenjerii patuturi",               "_CAMERA copilului",    "Lenjerie patut"],  
-               ["camera copilului|saltelute de infasat",            "_CAMERA copilului",    "Saltele infasat"],
-                
-               ["sanatate si igiena",				  				"_IGIENA si siguranta",  ""],
-               ["la mas|",				  							"_IGIENA si siguranta",  ""],
-               ["in baie|manusi de baie, halat de baie, prosoape",	"_IGIENA si siguranta",  ""],
-               ["in baie|termometre",				  				"_IGIENA si siguranta",  ""],
-               ["sigurana bebeluului|",				  				"_IGIENA si siguranta",  ""],
-               
-               ["jucrii|balansoare/leagne",        					"_BALANSOARE si leagane",  ""],
-               ["jucrii|",						 					"_JUCARII si jocuri",  ""],            
-                     
-               ["pentru mmici|geni",		  						"_Viitoare MAMICI",  "Genti mamici"],
-			   ["pentru mmici",			 	  						"_Viitoare MAMICI",  "Diverse"],
-		  
-               ["camera copilului|sosetele",                        "_DESTERS",          ""]
-              
-        
-               ]
-                 
-        
-        # Try to categorize the articles by the supplier's category
-        #   Go through the map and check if the first element is included in the category
-        for item in map:
-            # Return the new category and subcategory if the element is included (second and third element of the map)
-            if item[0] in categorie:
-                return (item[1], item[2])
-        
-        
-        title = article.title.lower()
-               
-        # If the article could not be chategorized so far, try to cathegorize them by title
-        for item in map:
-            # Return the new category and subcategory if the element is included (second and third element of the map)
-            if item[0] in title:
-                return (item[1], item[2])
-               
-        print("      * categorie necunoscuta:" + categorie + ". Articol neclasificat. Denumire: " + article.title)  
-        logging.warning("BabyShopsArticles: ComputeCategory: categorie necunoscuta:" + categorie + ". Articol neclasificat: " + article.title)  
-        return ("_Neclasificate", "")
-     
 class KidsDecorArticles(Articles):
      
-    def DownloadFeed(self):
-    
-        print("*** Descarcare feed KidsDecor...")
-        response = urllib.request.urlopen('http://kidsdecor.ro/feed/datafeed_kidsdecor.php')
-         
-        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
-        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
-        
-        with open(self.paths.feedFileNamePath, 'wb') as textfile:
-            textfile.write(feedData)
-            textfile.close()
-        
-        print("    Feed KidsDecor descarcat.")
-        #print(feedData)
-
     def Import(self):
          '''
          Import articles from csv file
@@ -1256,6 +1001,7 @@ class KidsDecorArticles(Articles):
                                                   price = row[8],
                                                   weight = 0,
                                                   available = row[11],
+                                                  initialCategory = row[0],
                                                   category = row[0],
                                                   supplier = "HDEC",
                                                   images = [row[7], "", "", "", "", "", "", "", "", "", "", ""]))
@@ -1310,22 +1056,7 @@ class KidsDecorArticles(Articles):
 class HubnersArticles(Articles):
     '''
     Handles the Hubners articles (HHUB)
-    '''
-        
-    def DownloadFeed(self):
-       
-        print("*** Descarcare feed Hubners HHUB...")
-        response = urllib.request.urlopen('http://www.hubners.ro/datafeed_csv.php')
-                    
-        feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
-        feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
-             
-        with open(self.paths.feedFileNamePath, "wb") as textfile:
-            textfile.write(feedData)
-            textfile.close()
-            
-        print("    Feed Hubners descarcat.")
-    
+    '''  
     
     def Import(self):
         '''
@@ -1365,6 +1096,7 @@ class HubnersArticles(Articles):
                                               title = row["title"],
                                               price = pret,
                                               pricePromo = pretPromo,
+                                              initialCategory = categorie,
                                               category = categorie,
                                               available = row["availability"],
                                               description = descriere,
