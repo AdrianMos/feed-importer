@@ -92,8 +92,7 @@ def main():
         haiducelAllArticles = factory.CreateHaiducelFeedObject()
         haiducelAllArticles.Import()
         haiducelFiltered = haiducelAllArticles.FilterBySupplier(feed.code)
-        print('    Articole importate: ' + 
-              str(haiducelFiltered.ArticlesCount()))
+        print('    Articole importate: ' + str(haiducelFiltered.ArticlesCount()))
         user.HorizontalLine()
         
         

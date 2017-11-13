@@ -30,6 +30,6 @@ class Factory(object):
         return newObject;
         
     def CreateHaiducelFeedObject(self):
-        return HaiducelArticles("Haiducel");
+        return HaiducelArticles("Haiducel", False);
     
 

@@ -31,7 +31,7 @@ class Articles(object):
     paths = PathBuilder("")
     code = ""
 
-    def __init__(self, code):
+    def __init__(self, code, readConfigFiles=True):
         '''
         Constructor
         '''
@@ -52,28 +52,32 @@ class Articles(object):
                 logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
                 raise
         
-        
-        self.LoadParametersFromConfigFile(self.paths.configFile)
-       
-        print("mapping file: " + self.mappingFile)
-        self.categoryMap = self.ReadMapFromFile(self.mappingFile)
+        if readConfigFiles==True:
+            self.LoadParametersFromConfigFile(self.paths.configFile)
+          
+            #print("mapping file: " + self.paths.mappingFile)
+            self.categoryMap = self.ReadMapFromFile(self.paths.mappingFile)
     
     def LoadParametersFromConfigFile(self, file):
         ''' 
         Reads configuration parameters from the configuration file
         '''
-        config = configparser.ConfigParser()
-        config.read(file)
         
-        self.downloadUrl = config.get('Download', 'url')   
-        self.username = config.get('Download', 'username')
-        self.password = config.get('Download', 'password')
-        self.delimiter = config.get('Import', 'delimiter') 
-        self.quotechar = config.get('Import', 'quotechar') 
-        
-        self.mappingFile = os.path.join("config", 
-                                        config.get('Import', 'categoryMappingFile'));
-                  
+        if not os.path.isfile(file):
+            print('ATENTIE: Fisierul de configuratie nu exista: ' + self.paths.configFile)
+        else:        
+            config = configparser.ConfigParser()
+            config.read(file)
+            
+            self.downloadUrl = config.get('Download', 'url')   
+            self.username = config.get('Download', 'username')
+            self.password = config.get('Download', 'password')
+            self.delimiter = config.get('Import', 'delimiter') 
+            self.quotechar = config.get('Import', 'quotechar') 
+            
+            self.paths.mappingFile = os.path.join("config", 
+                                                  config.get('Import', 'categoryMappingFile'));
+             
         
     def DownloadFeed(self):
         '''
@@ -293,19 +297,23 @@ class Articles(object):
         return article.initialCategory.lower()
         
     def ReadMapFromFile(self, file):
-        config = configparser.RawConfigParser(allow_no_value=True)
-        config.read(file)    
-        sections = config.sections()
-        print(" sections: " + str(sections))
         
-        #create mapping dictionary
         map = {}
-        for section in sections:
-            print(" section: " + str(section))
-            for key in config[section]: 
-              print("   ->key: " + key)
-              strippedKey = "".join(key.split())
-              map[strippedKey] = section
+        
+        if not os.path.isfile(file):
+            print('ATENTIE: Fisierul de sortare articole nu exista: ' + file)
+        else:  
+            config = configparser.RawConfigParser(allow_no_value=True)
+            config.read(file)    
+            sections = config.sections()
+                        
+            #create mapping dictionary
+            for section in sections:
+                #print(" section: " + str(section))
+                for key in config[section]: 
+                  #print("   ->key: " + key)
+                  strippedKey = "".join(key.split())
+                  map[strippedKey] = section
         
         return map
         
@@ -329,6 +337,9 @@ class Articles(object):
             print("        -> Cheie necunoscuta:" + self.GetMappingKey(article))  
         else:
             splitSection = section.split("#")
+            if len(splitSection)!=2 :
+                print("    EROARE: sectiunea [" + section + "] trebuie sa fie de forma [categorie#subcategorie]")
+                sys.exit("   \nEROARE: Sectiune invalida in fisierul de mapare: [" + section + "] !!!")
             article.category = splitSection[0]
             article.subcategory = splitSection[1]
             #print("*** category:" + article.category + " subcategory:" + article.subcategory)
@@ -725,6 +736,7 @@ class HaiducelArticles(Articles):
                                                             row["v_products_images_image_7"], row["v_products_images_image_8"],
                                                             row["v_products_images_image_9"], row["v_products_images_image_10"], 
                                                             row["v_products_images_image_11"],row["v_products_images_image_12"]])) 
+         print ("    import doe ")
          return -1          
 
 class BebeBrandsArticles(Articles):
