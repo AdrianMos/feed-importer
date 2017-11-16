@@ -39,20 +39,29 @@ def main():
         user.DisplayOptions()
         userInput = user.AskInput('Introduceti numarul optiunii: >> ')
         if userInput == '1':
+            print('Program terminat.')
             sys.exit('Program terminat.')
         
-        feed = factory.CreateSupplierFeedObject(userInput)
-        if feed is None:
+        
+        code = user.GetCodeForOption(userInput)
+        if code is None:
+            print('Optiune invalida. Program terminat.')
             sys.exit('Optiune invalida. Program terminat.')
         
+        feed = factory.CreateSupplierFeedObject(code)
+        if feed is None:
+            print('Optiune invalida. Program terminat.')
+            sys.exit('Optiune invalida. Program terminat.')
+            
         InitLogFile(feed.code)
+        
         
         print('  Procesare articole de tipul ' +
               feed.__class__.__name__ + '.')
 
-                  
+                
         if user.AskYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':
-            feed.DownloadFeed()
+            feed.DownloadFeed(feed.credentials)
         
         
         user.Title(' IMPORT DATE FEED ')
@@ -95,7 +104,6 @@ def main():
         print('    Articole importate: ' + str(haiducelFiltered.ArticlesCount()))
         user.HorizontalLine()
         
-        
         user.Title(' COMPARARI ')
         print('\n\nARTICOLE MODIFICATE')
         ProcessUpdatedArticles(haiducelFiltered, feed)
@@ -110,7 +118,7 @@ def main():
         
         user.Title(' DESCARCARE IMAGINI NOI ')
         if user.AskYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
-            newArticles.DownloadImages();  
+            newArticles.DownloadImages(feed.credentials);  
         user.HorizontalLine()
             
             

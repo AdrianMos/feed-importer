@@ -29,7 +29,29 @@ class UserInterface(object):
                                " ilegale in feed, feed-nu se descarca\n"
               "  8. Actualizare Hubners (HHUB)\n"
               )
-              
+
+    def GetCodeForOption(self, option):
+                
+        if option=="2":
+            code = "NAN"
+        elif option=="3":
+            code = "HDRE"
+        elif option=="4":
+            code = "BEB"
+        elif option=="5":
+            code = "HBBA"
+        elif option=="6":
+            code = "HMER"
+        elif option=="7":
+            code = "HDEC"
+        elif option=="8":
+            code = "HHUB"
+        else:
+            code =  None
+            
+        return code
+    
+    
     def Title(self, title):
         
         titleCountStr = '(' + str(self.titleCounter) + ')'

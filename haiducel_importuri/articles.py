@@ -5,6 +5,7 @@ Created on 26.04.2014
 '''
 from article import Article
 from pathbuilder import PathBuilder
+from credentials import Credentials
 from descriptionprocessor import DescriptionProcessor
 
 import codecs
@@ -27,19 +28,18 @@ class Articles(object):
     '''
     classdocs
     '''
-    articleList=[]
-    paths = PathBuilder("")
-    code = ""
 
-    def __init__(self, code, readConfigFiles=True):
+    def __init__(self, code):
         '''
         Constructor
         '''
         self.articleList = []
         self.code = code
-        self.paths = PathBuilder(code)
+        self.credentials = None
+        self.paths = None
+        self.parameters = None
         
-        
+        print("4")
         # Check the folders availability for this client. Create the folder structure if necessary.
         clientFolder = os.path.join(os.getcwd(), self.code, "out");
         if not os.path.isdir(clientFolder):
@@ -52,51 +52,27 @@ class Articles(object):
                 logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
                 raise
         
-        if readConfigFiles==True:
-            self.LoadParametersFromConfigFile(self.paths.configFile)
-          
-            #print("mapping file: " + self.paths.mappingFile)
-            self.categoryMap = self.ReadMapFromFile(self.paths.mappingFile)
-    
-    def LoadParametersFromConfigFile(self, file):
-        ''' 
-        Reads configuration parameters from the configuration file
-        '''
-        
-        if not os.path.isfile(file):
-            print('ATENTIE: Fisierul de configuratie nu exista: ' + self.paths.configFile)
-        else:        
-            config = configparser.ConfigParser()
-            config.read(file)
+        print("Articles _init_ end")
             
-            self.downloadUrl = config.get('Download', 'url')   
-            self.username = config.get('Download', 'username')
-            self.password = config.get('Download', 'password')
-            self.delimiter = config.get('Import', 'delimiter') 
-            self.quotechar = config.get('Import', 'quotechar') 
-            
-            self.paths.mappingFile = os.path.join("config", 
-                                                  config.get('Import', 'categoryMappingFile'));
-             
         
-    def DownloadFeed(self):
+    def DownloadFeed(self, credentials):
         '''
         Downloads articles feeds
         '''
         print("*** Descarcare feed " + self.code + "...")     
                 
-        if self.username != "": 
-        #authentication required
-            response = requests.get(self.downloadUrl,
-                                verify=False, 
-                                auth=(self.username, self.password))
+        if credentials.username != "": 
+            #authentication required
+            response = requests.get(self.parameters.downloadUrl,
+                                    verify=False, 
+                                    auth=(credentials.username, credentials.password))
             feedData = response.text 
             
             with open(self.paths.feedFileNamePath, 'wb') as textfile:
                 textfile.write(bytes(feedData, 'UTF-8'))
                 textfile.close()
         else:
-            response = urllib.request.urlopen(self.downloadUrl)
+            response = urllib.request.urlopen(self.parameters.downloadUrl)
                           
             feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
             feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
@@ -111,49 +87,46 @@ class Articles(object):
     def ArticlesCount(self):
         return self.articleList.__len__()
     
-    @staticmethod
-    def DownloadAndSaveImage(imgUrl, imgSavePath1, imgSavePath2=""):
+
+    def DownloadAndSaveImage(self, imgUrl, credentials, imgSavePath1, imgSavePath2=""):
+                
         try:
-            #print ("trying to open url: *" + imgUrl + "*")
-            # Download image
-            
-            #req = urllib.Request(imgUrl, headers={'User-Agent' : "Magic Browser"}) 
-            #con = urllib.request
-            #(, headers={'User-Agent' : "Magic Browser"}).urlopen(imgUrl)
-            #data = con.read()
-                  
+
             imgUrl = imgUrl.replace(" ", "%20")
-                    
             user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) Ubuntu/12.04 Chromium/18.0.1025.168 Chrome/18.0.1025.168 Safari/535.19'
-            req = urllib.request.Request(imgUrl, headers={'User-Agent': user_agent})
+
+            if credentials.username != "":
+                                                        
+                response = requests.get(imgUrl,
+                                        verify=False, 
+                                        auth=(credentials.username, credentials.password),
+                                        headers={'user-agent': user_agent})
+                                
+                if response.status_code == 200:
+                    with open(imgSavePath1, 'wb') as file:
+                        file.write(response.content)
+                    
+                    # If a second save path location has been given, save the image in this location
+                    if imgSavePath2!="":
+                        with open(imgSavePath2, 'wb') as file:
+                            file.write(response.content)
             
-            response = urllib.request.urlopen(req)
-            data = response.read()
-          
-            
-            #print("--" + req.full_url + "--")
-            #u = urllib.request.urlopen(req)
-           
-            
-            
-            #req = urllib.request.Request(url="http://localhost/",data=b'None',headers={'User-Agent':' Mozilla/5.0 (Windows NT 6.1; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0'})
-            #data = urllib.request.urlopen(imgUrl)
-            
-            #urllib.urlretriev("http://www.gunnerkrigg.com//comics/00000001.jpg", "00000001.jpg")
-            
-            #response = urllib.request.urlopen(imgUrl)
-            #data = response.read()
-            
-            
-            # Save image
-            with open(imgSavePath1, 'wb') as file:
-                file.write(data)
-            
-            # If a second save path location has been given, save the image in this location
-            if imgSavePath2!="":
-                with open(imgSavePath2, 'wb') as file:
+            else:
+                
+                req = urllib.request.Request(imgUrl, headers={'User-Agent': user_agent})
+                response = urllib.request.urlopen(req)
+                data = response.read()                
+                
+                # Save image
+                with open(imgSavePath1, 'wb') as file:
                     file.write(data)
-            #print("#path" + imgSavePath1 + " #orig path:" + imgUrl)
+                
+                # If a second save path location has been given, save the image in this location
+                if imgSavePath2!="":
+                    with open(imgSavePath2, 'wb') as file:
+                        file.write(data)
+                #print("#path" + imgSavePath1 + " #orig path:" + imgUrl)
+            
         
         except OSError as ex:
             print("Eroare salvare fisier: " + imgSavePath1 + " si/sau " + imgSavePath2 +"\n   motiv:"+ ex.reason)  
@@ -190,8 +163,8 @@ class Articles(object):
          
         print("    Articole eliminate din feed: " + str(itemsBeforeRemoval - self.ArticlesCount()))
      
-       
-    def DownloadImages(self):
+    #@staticmethod   
+    def DownloadImages(self, credentials):
         '''
         Downloads the customer images
         '''
@@ -225,9 +198,9 @@ class Articles(object):
                     # for generating the small image
                     try:
                         if imgCounter==0:
-                            self.DownloadAndSaveImage(imgUrl, os.path.join(self.paths.allImagesFolder, imgNameNew), os.path.join(self.paths.mainImagesFolder,imgNameNew)) 
+                            self.DownloadAndSaveImage(imgUrl, credentials, os.path.join(self.paths.allImagesFolder, imgNameNew), os.path.join(self.paths.mainImagesFolder,imgNameNew)) 
                         else:
-                            self.DownloadAndSaveImage(imgUrl, os.path.join(self.paths.allImagesFolder, imgNameNew)) 
+                            self.DownloadAndSaveImage(imgUrl, credentials, os.path.join(self.paths.allImagesFolder, imgNameNew)) 
                     except:
                         e = sys.exc_info()[0]
                         print ("\nEROARE descarcare imagine pentru articolul: ", art.title, ' @ ', imgNameNew, "@", imgUrl, " eroare:", e)
@@ -296,26 +269,6 @@ class Articles(object):
         '''
         return article.initialCategory.lower()
         
-    def ReadMapFromFile(self, file):
-        
-        map = {}
-        
-        if not os.path.isfile(file):
-            print('ATENTIE: Fisierul de sortare articole nu exista: ' + file)
-        else:  
-            config = configparser.RawConfigParser(allow_no_value=True)
-            config.read(file)    
-            sections = config.sections()
-                        
-            #create mapping dictionary
-            for section in sections:
-                #print(" section: " + str(section))
-                for key in config[section]: 
-                  #print("   ->key: " + key)
-                  strippedKey = "".join(key.split())
-                  map[strippedKey] = section
-        
-        return map
         
     def FindSectionForKey(self, searchKey, map):          
         searchKeyTrimedSpaces = "".join(searchKey.split())
@@ -351,7 +304,7 @@ class Articles(object):
         Computes the category for the current article.
         '''        
         section = self.FindSectionForKey(self.GetMappingKey(article), 
-                                         self.categoryMap)  
+                                         self.parameters.categoryMap)  
         article = self.UpdateArticleBasedOnMappedSection(article, section)
         
         return article
@@ -416,7 +369,7 @@ class NANArticles(Articles):
          '''
          Import articles from csv file
          '''
-         
+         print("*** Import articole ...")     
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
 
          with open(self.paths.feedFileNamePath, 'rt') as csvfile:
@@ -433,6 +386,7 @@ class NANArticles(Articles):
                                                   category = row[7],
                                                   supplier = "NAN",
                                                   images = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]]))
+         print("    Import terminat.")
          return -1
 
 
@@ -496,7 +450,7 @@ class BEBArticles(Articles):
         18 pret_promo_achizitie_revanzator, 19 info_pret, 20 tip, 21 pentru, 22 varsta,
         23 material, 24 culoare, 25 greutate, 26 garantie, 27 disponibilitate
          '''           
-        
+         print("*** Import articole ...")     
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
          
          with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
@@ -535,6 +489,7 @@ class BEBArticles(Articles):
                                                   supplier = "BEB",
                                                   images = imagesArray))
              
+         print("    Import terminat.")     
          return -1
         
         
@@ -591,7 +546,7 @@ class HDREArticles(Articles):
     Handles the BabyDreams artiles (HDRE)
     '''
      
-    def DownloadFeed(self):
+    def DownloadFeed(self, credentials):
     
         print("*** Descarcare feed HDRE...")
         response = urllib.request.urlopen('http://www.kidcity.ro/products_feed_csv.php')           
@@ -743,8 +698,7 @@ class BebeBrandsArticles(Articles):
     '''
     Handles the BebeBrands articles (HBBA)
     '''
-    downloadUrl = ""
-    
+        
     def __init__(self, code):
         super().__init__(code)
                 
@@ -772,9 +726,9 @@ class BebeBrandsArticles(Articles):
         with open(self.paths.feedFileNamePath, "rt") as csvfile:
              
              if self.quotechar!="":
-                reader = csv.reader(csvfile, delimiter=self.delimiter, quotechar=self.quotechar)
+                reader = csv.reader(csvfile, delimiter=self.parameters.delimiter, quotechar=self.parameters.quotechar)
              else:
-                reader = csv.reader(csvfile, delimiter=self.delimiter)
+                reader = csv.reader(csvfile, delimiter=self.parameters.delimiter)
             
                       
              for row in reader:
