@@ -36,8 +36,7 @@ class Parameters(object):
             self.delimiter = config.get('Import', 'delimiter') 
             self.quotechar = config.get('Import', 'quotechar') 
             self.categoryMappingFile = config.get('Import', 'categoryMappingFile')
-        print("categ mapping: " + self.categoryMappingFile)
-
+        
         
         
     def ReadMapFromFile(self, file):
