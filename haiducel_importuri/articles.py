@@ -39,7 +39,6 @@ class Articles(object):
         self.paths = None
         self.parameters = None
         
-        print("4")
         # Check the folders availability for this client. Create the folder structure if necessary.
         clientFolder = os.path.join(os.getcwd(), self.code, "out");
         if not os.path.isdir(clientFolder):
@@ -52,8 +51,6 @@ class Articles(object):
                 logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
                 raise
         
-        print("Articles _init_ end")
-            
         
     def DownloadFeed(self, credentials):
         '''

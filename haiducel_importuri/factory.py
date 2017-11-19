@@ -60,7 +60,7 @@ class Factory(object):
     def CreateHaiducelFeedObject(self):
         code = "Haiducel"
         paths = PathBuilder(code)
-        newObject = HaiducelArticles(code, False);
+        newObject = HaiducelArticles(code);
         newObject.paths = paths
         
         return newObject
