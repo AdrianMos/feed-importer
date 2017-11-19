@@ -20,7 +20,7 @@ class Operations(object):
         It also returns a dictionary including pairs of (id, comparison message).
         '''
         compareStatus=collections.OrderedDict()
-        articlesUpdated = Articles(articlesReference.code)
+        articlesUpdated = Articles(articlesReference.code, None, None, None)
      
         for art1 in articlesReference.articleList:
             for art2 in articlesToCompare.articleList:
@@ -45,7 +45,7 @@ class Operations(object):
         returns an Articles() object with all updated articles.
         '''
                
-        result = Articles("")
+        result = Articles("", None, None, None)
      
         for art1 in articlesToSubstractFrom.articleList:
             
@@ -69,7 +69,7 @@ class Operations(object):
         Removes the unavailable articles.
         Returns an Articles() object containing only available articles.
         '''     
-        result = Articles("")
+        result = Articles("", None, None, None)
      
         for art1 in articles.articleList:
             
@@ -85,7 +85,7 @@ class Operations(object):
         Returns an Articles() object with all updated articles.
         '''
                
-        result = Articles("")
+        result = Articles("", None, None, None)
      
         position=0
         for art1 in articles.articleList:

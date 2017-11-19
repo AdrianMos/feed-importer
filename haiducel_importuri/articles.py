@@ -29,15 +29,15 @@ class Articles(object):
     classdocs
     '''
 
-    def __init__(self, code):
+    def __init__(self, code, paths, credentials, parameters):
         '''
         Constructor
         '''
         self.articleList = []
         self.code = code
-        self.credentials = None
-        self.paths = None
-        self.parameters = None
+        self.credentials = credentials
+        self.paths = paths
+        self.parameters = parameters
         
         # Check the folders availability for this client. Create the folder structure if necessary.
         clientFolder = os.path.join(os.getcwd(), self.code, "out");
@@ -352,7 +352,7 @@ class Articles(object):
     
     def FilterBySupplier(self, supplier):
         
-        filteredArticles = Articles(self.code)
+        filteredArticles = Articles(self.code, None, None, None)
         for article in self.articleList:
             if article.supplier == supplier:
                 filteredArticles.Add1(article)
@@ -696,8 +696,8 @@ class BebeBrandsArticles(Articles):
     Handles the BebeBrands articles (HBBA)
     '''
         
-    def __init__(self, code):
-        super().__init__(code)
+    def __init__(self, code, paths, credentials, parameters):
+        super().__init__(code, paths, credentials, parameters)
                 
         config = configparser.ConfigParser()
         config.read(self.paths.configFile)
@@ -712,6 +712,13 @@ class BebeBrandsArticles(Articles):
         self.columnNo["category"] = config.getint('Import', 'category')
         self.columnNo["image0"] = config.getint('Import', 'image0')
         self.columnNo["image1"] = config.getint('Import', 'image1')
+        self.columnNo["image2"] = config.getint('Import', 'image2')
+        self.columnNo["image3"] = config.getint('Import', 'image3')
+        self.columnNo["image4"] = config.getint('Import', 'image4')
+        self.columnNo["image5"] = config.getint('Import', 'image5')
+        self.columnNo["image6"] = config.getint('Import', 'image6')
+        self.columnNo["image7"] = config.getint('Import', 'image7')
+        self.columnNo["image8"] = config.getint('Import', 'image8')
        
     
     def Import(self):
@@ -722,7 +729,7 @@ class BebeBrandsArticles(Articles):
                
         with open(self.paths.feedFileNamePath, "rt") as csvfile:
              
-             if self.quotechar!="":
+             if self.parameters.quotechar!="":
                 reader = csv.reader(csvfile, delimiter=self.parameters.delimiter, quotechar=self.parameters.quotechar)
              else:
                 reader = csv.reader(csvfile, delimiter=self.parameters.delimiter)
@@ -745,7 +752,14 @@ class BebeBrandsArticles(Articles):
                   #if images[images.__len__()-1]=="g":
                   #    images[images.__len__()-1]=""
                   images = [row[self.columnNo["image0"]], 
-                            row[self.columnNo["image1"]], "", "", "", "", "", "", "", "", "", ""]
+                            row[self.columnNo["image1"]], 
+                            row[self.columnNo["image2"]], 
+                            row[self.columnNo["image3"]], 
+                            row[self.columnNo["image4"]], 
+                            row[self.columnNo["image5"]], 
+                            row[self.columnNo["image6"]], 
+                            row[self.columnNo["image7"]],
+                            row[self.columnNo["image8"]], "", "", ""]
                   
                   
                   # print ("Articol: " + row[ self.columnNo["title"]])

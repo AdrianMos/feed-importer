@@ -28,40 +28,30 @@ class Factory(object):
         
         
         if code == "NAN":
-            newObject = NANArticles(code)    
+            newObject = NANArticles(code, paths, credentials, parameters)    
         elif code == "HDRE":
-            newObject = HDREArticles(code)
+            newObject = HDREArticles(code, paths, credentials, parameters)
         elif code == "BEB":
-            newObject = BEBArticles(code)
+            newObject = BEBArticles(code, paths, credentials, parameters)
         elif code == "HBBA":
-            newObject = BebeBrandsArticles(code)
+            newObject = BebeBrandsArticles(code, paths, credentials, parameters)
         elif code == "HMER":
-            newObject = BabyShopsArticles(code)
+            newObject = BabyShopsArticles(code, paths, credentials, parameters)
         elif code == "HDEC":
-            newObject = KidsDecorArticles(code)
+            newObject = KidsDecorArticles(code, paths, credentials, parameters)
         elif code == "HHUB":
-            newObject = HubnersArticles(code)
+            newObject = HubnersArticles(code, paths, credentials, parameters)
         else:
             newObject = None
-           
-        if newObject is not None:
-            newObject.credentials = credentials
-            newObject.paths = paths
-            newObject.parameters = parameters
-            
-        print("3")
         
         return newObject;
     
 
     
-    
-    
     def CreateHaiducelFeedObject(self):
         code = "Haiducel"
         paths = PathBuilder(code)
-        newObject = HaiducelArticles(code);
-        newObject.paths = paths
+        newObject = HaiducelArticles(code, paths, None, None);
         
         return newObject
     
