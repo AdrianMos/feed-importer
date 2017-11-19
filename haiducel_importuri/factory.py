@@ -18,7 +18,7 @@ class Factory(object):
         
         paths = PathBuilder(code)
         credentials = Credentials("","")
-        credentials.LoadFromFile(paths.configFile)
+        credentials.LoadFromFile(paths.credentialsFile)
         parameters = Parameters()
         parameters.LoadFromFile(paths.configFile)
         

@@ -63,6 +63,11 @@ class Articles(object):
             response = requests.get(self.parameters.downloadUrl,
                                     verify=False, 
                                     auth=(credentials.username, credentials.password))
+                                    
+            if  response.status_code != 200:
+                print("\nEROARE: Parola si/sau utilizatorul nu sunt valide, status: " + str(response.status_code))
+                sys.exit("   \nEROARE: Parola si/sau utilizatorul nu sunt valide, status: " + str(response.status_code))
+            
             feedData = response.text 
             
             with open(self.paths.feedFileNamePath, 'wb') as textfile:

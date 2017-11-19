@@ -24,4 +24,6 @@ class PathBuilder(object):
         self.mainImagesFolder = os.path.join("_ imagini noi", "mici neprocesate")
         self.feedFileNamePath = os.path.join(code, "feed" + code + ".csv")
         self.configFile = os.path.join(os.getcwd(), "config", "config" + code + ".ini");
+        self.credentialsFile = os.path.join(os.getcwd(), "config", "credentials", "credentials" + code + ".ini");
+        
 
