@@ -245,23 +245,9 @@ class Articles(object):
         Calculates the new price that will be used in our database.
         Use the promo price if available; decrease prices with 1 leu; Don't display prices <160 lei
         :param article: article used for computing the price
+        '''   
+        return 0
         
-        Requirements: 
-          Prices less than 350 should be set to 0 (not displayed).
-          Display promo price if available. 
-          Displayed prices should be decreased with 1.
-        '''  
-        result = float(article.price)-0.1
-        
-        # If promo price available, and smaller than price     
-        if (article.pricePromo < article.price and article.pricePromo > 0):
-            result = float(article.pricePromo)-0.1
-        
-        # Prices less than 350 should be set to 0
-        if result<350:
-            return 0
-        else:
-            return result
     
     def GetMappingKey(self, article):
         '''
@@ -823,24 +809,24 @@ class BebeBrandsArticles(Articles):
         newImageNames = [article.images[0]]
         newImageNames.extend(article.images)          
         
-        # for i in range(0, len(newImageNames)):
-            # fullPath = newImageNames[i].replace("//", "/")
+        for i in range(0, len(newImageNames)):
+            fullPath = newImageNames[i].replace("//", "/")
             
-            # if fullPath=="":
-                # newPath = ""
-            # else:
-                # path,file=os.path.split(fullPath)
-                # extension = fullPath[fullPath.rfind("."):]
+            if fullPath=="":
+                newPath = ""
+            else:
+                path,file=os.path.split(fullPath)
+                extension = fullPath[fullPath.rfind("."):]
                 
                 #Extract all characters until second underscore.                
-                # if i==0:
+                if i==0:
                     #Path to small image, append an _s
-                    # newPath = "HBBA/" + file[:file.rfind(".")] + "_s" + extension
-                # else:
-                    # newPath = "HBBA/" + file
+                    newPath = "HBBA/" + file[:file.rfind(".")] + "_s" + extension
+                else:
+                    newPath = "HBBA/" + file
                     
-            # newImageNames[i] = newPath
-        #
+            newImageNames[i] = newPath
+        
         # Extend the list to the maximum elements
         for i in range(len(newImageNames), 13):
             newImageNames.append("")
