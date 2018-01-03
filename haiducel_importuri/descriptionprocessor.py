@@ -13,7 +13,7 @@ def _InsertBreakBeforeDashIfNotWithinWord(matchObj):
     Used by a regex function. Called when a specific string pattern is found.
     '''
     match = matchObj.group(0)
-    isDashWithinWord = match in ["sa-s", "ce-i", "tr-u", "tr-o", "l-am", "i-am", "a-si", "sa-si", "sa-l", "a-ti", "3-10", "0-10"]; #from word: sa-si, ce-i, dintr-un, dintr-o
+    isDashWithinWord = match in ["sa-s", "ce-i", "tr-u", "tr-o", "l-am", "i-am", "a-si", "sa-si", "sa-l", "a-ti", "si-a", "non-toxic", "ultra-compact", "mini-geam", "full-option", "anti-rasturnare", "3-10", "0-10"]; #from word: sa-si, ce-i, dintr-un, dintr-o
     
     if (isDashWithinWord):
         return match

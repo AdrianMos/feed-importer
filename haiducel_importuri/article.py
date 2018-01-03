@@ -4,7 +4,8 @@ class Article(object):
     """Holds article information"""
     
             
-    def __init__(self, id, title, price, available, initialCategory, category, supplier, subcategory="", images=[""]*13, description="", weight=0, quantity=1, pricePromo=0):  
+    def __init__(self, id, title, price, available, initialCategory, category, supplier, subcategory="",
+                 imagesUrl=[""]*13, description="", weight=0, quantity=1, pricePromo=0):  
         self.id = id.strip()
         self.title = title.strip()
         self.price = float(str(price).strip())
@@ -17,15 +18,32 @@ class Article(object):
         self.category = category.strip()
         self.subcategory = subcategory.strip()
         self.supplier = supplier.strip()
-        self.images = [img.strip() for img in images]
+        self.imagesUrl = [img.strip() for img in imagesUrl]
+        self.imageSmallName = ""
+        self.imageSmallPath = ""
+        self.images = [""]*12
+        self.imagesNames = [""]*12
+        self.imagesPaths = [""]*12
+        
+        # prepare the image names as we use them
+        #for i, url in enumerate(self.imagesUrl):
+        #    customName = url
+        #    customName = customName.replace("\\", "/")
+        #    # extract only the filename from whole path
+        #    customName = customName[customName.rfind("/")+1:]
+        #    # replace spaces by dash "-"
+        #    customName = customName.replace(" ", "-")
+        #    customName = customName.replace("%20", "-")
+        #    self.images[i] = customName
+        #    #print("image " + str(i) + " name: " + self.images[i])
+
+        #self.imageSmall = GetSmallImageName(self.images[0])
         
         # Extend the images list to the maximum elelemnts
-        for i in range(len(self.images), 13):
-            self.images.append("")
-        
-
-    
-       
+        for i in range(len(self.imagesUrl), 12):
+            self.imagesUrl.append("")
+     
+     
     def IsSameArticle(self, articleToCompare):
         if self.id == articleToCompare.id:
             return True
@@ -63,9 +81,9 @@ class Article(object):
                 "\nDescription: *" + self.description + "*")   
        
         counter = 0
-        for image in self.images:
+        for imageUrl in self.imagesUrl:
             if image!="":
-                toString = toString +  "\nImage" + str(counter) + ": *" + image + "*"
+                toString = toString +  "\nImage" + str(counter) + ": *" + imageUrl + "*"
             counter = counter+1
     
         return toString

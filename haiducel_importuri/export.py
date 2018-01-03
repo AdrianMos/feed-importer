@@ -55,18 +55,19 @@ class Export(object):
            
             for a in articles.articleList:
                 
-                row = [a.id, a.title, a.description, a.title, 
-                       a.description, a.imagesNew[0], 
-                       a.imagesNew[1], a.imagesNew[2], a.imagesNew[3], 
-                       a.imagesNew[4], a.imagesNew[5], a.imagesNew[6],
-                       a.imagesNew[7], a.imagesNew[8], a.imagesNew[9], 
-                       a.imagesNew[10], a.imagesNew[11], a.imagesNew[12],
-                       a.supplier, a.price, a.quantity, a.weight,
+                row = [a.id, a.title, a.description, a.title, a.description,
+                       a.imageSmallPath]
+                row.extend(a.imagesPaths)
+                
+                row.extend([a.supplier, a.price, a.quantity, a.weight,
                        a.category, a.category, a.subcategory, a.subcategory,
-                       a.available, "EOREOR"]
+                       a.available, "EOREOR"])
                 writer.writerow(row)
                 
         print ("    Fisier salvat:\n      \t" + filename)
+
+
+         
 
     def ExportDataForOnlineshop(self, articles, filename):
             
@@ -80,9 +81,9 @@ class Export(object):
                 
                 row = [a.id, a.title, a.description, a.title, 
                        a.description, "", 
-                       a.images[0], a.images[1], a.images[2], a.images[3], 
-                       a.images[4], a.images[5], a.images[6], a.images[7], 
-                       a.images[8], a.images[9], a.images[10], a.images[11],
+                       a.imagesUrl[0], a.imagesUrl[1], a.imagesUrl[2],  a.imagesUrl[3], 
+                       a.imagesUrl[4], a.imagesUrl[5], a.imagesUrl[6],  a.imagesUrl[7], 
+                       a.imagesUrl[8], a.imagesUrl[9], a.imagesUrl[10], a.imagesUrl[11],
                        a.supplier, a.price, a.quantity, a.weight,
                        a.category, a.category, a.subcategory, a.subcategory,
                        a.available, "EOREOR"]

@@ -93,7 +93,6 @@ class Articles(object):
     def DownloadAndSaveImage(self, imgUrl, credentials, imgSavePath1, imgSavePath2=""):
                 
         try:
-
             imgUrl = imgUrl.replace(" ", "%20")
             user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) Ubuntu/12.04 Chromium/18.0.1025.168 Chrome/18.0.1025.168 Safari/535.19'
 
@@ -185,33 +184,41 @@ class Articles(object):
             #print('.', end='')
             #print("image next", end=" ")
             
-            imgCounter=0
             
             # Download all images for current article
-            for imgUrl in art.images:
-                
+            for i, imgUrl in enumerate(art.imagesUrl):
+             
                 if imgUrl!="":
                     
                     # Image name; Extract only the filename from whole path
-                    imgNameNew = art.imagesNew[imgCounter+1] 
-                    imgNameNew = imgNameNew[imgNameNew.rfind("/")+1:]
-                                                                                                   
+                    #imgNameNew = art.imagesNew[i+1] 
+                    #imgNameNew = imgNameNew[imgNameNew.rfind("/")+1:]
+                    #imgNameNew = imageNameNew.replace(" ", "-")
+                    #imgNameNew = imageNameNew.replace("%20", "-")
+                                                                                 
                     # If the main image is downloaded, save it also to a separate folder - later used
                     # for generating the small image
+                    
                     try:
-                        if imgCounter==0:
-                            self.DownloadAndSaveImage(imgUrl, credentials, os.path.join(self.paths.allImagesFolder, imgNameNew), os.path.join(self.paths.mainImagesFolder,imgNameNew)) 
+                        isMainImage = (i==0)
+                        if isMainImage:
+                            self.DownloadAndSaveImage(imgUrl, credentials, 
+                                                      imgSavePath1 = os.path.join(self.paths.allImagesFolder, art.imagesNames[i]),
+                                                      imgSavePath2 = os.path.join(self.paths.mainImagesFolder,art.imagesNames[i])) 
                         else:
-                            self.DownloadAndSaveImage(imgUrl, credentials, os.path.join(self.paths.allImagesFolder, imgNameNew)) 
+                            self.DownloadAndSaveImage(imgUrl, credentials, 
+                                                       imgSavePath1 = os.path.join(self.paths.allImagesFolder,art.imagesNames[i])) 
                     except:
                         e = sys.exc_info()[0]
-                        print ("\nEROARE descarcare imagine pentru articolul: ", art.title, ' @ ', imgNameNew, "@", imgUrl, " eroare:", e)
+                        print ("\nEROARE descarcare imagine pentru articolul: ", art.title, ' @ ', art.imagesNames[i], "@", imgUrl, " eroare:", e)
                         logging.error('articles: articol <' + art.title + '> : eroare descarcare imagine <' + imgUrl + '> : mesaj eroare : ' + e)
+
+                    
                         
                     sys.stdout.write(".")
                     sys.stdout.flush()
                                               
-                imgCounter = imgCounter+1                   
+                                   
             
             sys.stdout.write("/")
             sys.stdout.flush()
@@ -252,7 +259,7 @@ class Articles(object):
     def GetMappingKey(self, article):
         '''
         Returns a mapping key, used for remapping an article.
-        The mapping key is used for finding a section for an article in the mapping configuration file.
+        The key is used for finding a section for an article in the mapping configuration file.
         :param article: article for which the mapping key is returned
         '''
         return article.initialCategory.lower()
@@ -303,7 +310,27 @@ class Articles(object):
         :param article: article used for computing.
         '''
         return "Active"
-           
+
+    def GenerateImageNameFromUrl(self, imageUrl):
+        '''
+        Converts the image url into our internal  file naming. 
+          e.g:
+          url: http://www.supplieraddres.ro/wp-content/uploads/image name.jpg
+          returns: success: "image-name.jpg"
+                   failure: "noimage.jpg" 
+        :param imageUrl:
+        '''
+        url = imageUrl.replace("\\", "/")
+        filename=""
+          
+        path,filename=os.path.split(url)
+        filename = filename.replace(" ", "-")
+        filename = filename.replace("%20", "-")
+                
+        if filename=="" or path=="" or filename.rfind(".")==-1:
+            return "noimage.jpg"      
+
+        return filename
     
     def ComputeImages(self, article):
         '''
@@ -337,9 +364,24 @@ class Articles(object):
             article.price        = self.ComputePrice(article)
             article.available    = self.ComputeAvailability(article)
             article.imagesNew    = self.ComputeImages(article)
+            #TODO: remove ComputeImages
+            #article.imageSmall = article.imagesNew[0]
+            #article.images = article.imagesNew[1:]
+            for  i,imageUrl in  enumerate(article.imagesUrl):
+                article.imagesNames[i] = self.GenerateImageNameFromUrl(imageUrl)
+                article.imagesPaths[i] = self.GenerateImagePath(article, article.imagesNames[i])
+
+            article.imageSmallName = self.GenerateSmallImageName(article.imagesNames[0])
+            article.imageSmallPath = self.GenerateImagePath(article, article.imageSmallName)
+            
+            #print(str(article.imagesNew))
             article.description  = self.ComputeDescription(article)
             article = self.ComputeCategory(article)
-            
+
+    def GenerateSmallImageName(self, mainImageName):
+        extension = mainImageName[mainImageName.rfind("."):]
+        return mainImageName[:mainImageName.rfind(".")] + "_s" + extension
+
     
     def FilterBySupplier(self, supplier):
         
@@ -373,7 +415,7 @@ class NANArticles(Articles):
                                                   initialCategory = row[7],
                                                   category = row[7],
                                                   supplier = "NAN",
-                                                  images = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]]))
+                                                  imagesUrl = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]]))
          print("    Import terminat.")
          return -1
 
@@ -388,8 +430,43 @@ class NANArticles(Articles):
             return "Active"
         else:
             return "Inactive"
-          
+
+    def GenerateImagePath(self, article, imageName):
+        if imageName!="":
+            return article.supplier + "/" + imageName
+        else:
+            return ""
+    
+    def GenerateImageNameFromUrl(self, imageUrl):
+        '''
+        Convert image names to our internal naming. 
+          original image: http://www.importatorarticolecopii.ro/prodpics/p_105156c46838594_set lenjerie pat copii pek safari verde 1 my kids baby shop www.mykids.jpg
+          after trimming should be: p_105156c46838594.jpg
+        :param article:
+        '''
+        url = imageUrl.replace("\\", "/")
+        filename = ""
+        
+        if imageUrl!="":
+            path,file=os.path.split(url)
+            
+            if file=="" or path=="" or file.rfind("_")==-1 or file.rfind(".")==-1:
+                return "noimage.jpg"
+            
+            extension = url[url.rfind("."):]
+            posLastUnderscore = file.rfind("_")
+            
+            filename = file[:posLastUnderscore] + extension
+            filename = filename.replace(" ", "-")
+            filename = filename.replace("%20", "-") 
+
+            wordsToBeRemoved = ["my_kids", "my-kids", "mykids", "Mykids.ro",
+                                "MyKids.ro", "Mykids", "MyKids"]
+            for word in wordsToBeRemoved:
+                filename = filename.replace(word, "")
                    
+        return filename
+    
     def ComputeImages(self, article):
         '''
         Convert image names to our format. 
@@ -398,8 +475,8 @@ class NANArticles(Articles):
         :param article:
         '''
         #create a new first element thath will include the link to small image
-        newImageNames = [article.images[0]]
-        newImageNames.extend(article.images)
+        newImageNames = [article.imagesUrl[0]]
+        newImageNames.extend(article.imagesUrl)
            
         for i in range(0, len(newImageNames)):
              
@@ -419,7 +496,9 @@ class NANArticles(Articles):
                      newPath = "NAN/" + file[:posLastUnderscore] + "_s" + extension  
                  else:
                      newPath = "NAN/" + file[:posLastUnderscore] + extension
-                 
+             
+             newPath = newPath.replace(" ", "-")
+             newPath = newPath.replace("%20", "-") 
              newImageNames[i] = newPath   
         return newImageNames
 
@@ -475,7 +554,7 @@ class BEBArticles(Articles):
                                                   initialCategory = row[2],
                                                   category = row[2],
                                                   supplier = "BEB",
-                                                  images = imagesArray))
+                                                  imagesUrl = imagesArray))
              
          print("    Import terminat.")     
          return -1
@@ -503,7 +582,7 @@ class BEBArticles(Articles):
         :param article:
         '''
         #create a new first element thath will include the link to small image
-        newImageNames = [article.images[0]]
+        newImageNames = [article.imagesUrl[0]]
         newImageNames.extend(article.images)
            
         for i in range(0, len(newImageNames)):
@@ -524,8 +603,10 @@ class BEBArticles(Articles):
                      newPath = "BEB/" + file[:posPoint] + "_s" + extension  
                  else:
                      newPath = "BEB/" + file[:posPoint] + extension
-                 
-             newImageNames[i] = newPath   
+             
+             newPath = newPath.replace(" ", "-")
+             newPath = newPath.replace("%20", "-")
+             newImageNames[i] = newPath
         return newImageNames
 
 
@@ -577,7 +658,7 @@ class HDREArticles(Articles):
                                                   description = row["descriere"],
                                                   weight = greutate,
                                                   supplier = "HDRE",
-                                                  images = images)) 
+                                                  imagesUrl = images)) 
                 except:
                     logging.error('Import(): Eroare import articol index ' +  str(index) + ' cod (posibil eronat):' + row["cod"])
                     numErrors = numErrors + 1
@@ -600,7 +681,28 @@ class HDREArticles(Articles):
         else:
             return "Inactive"
         
-        
+
+    def GenerateImageNameFromUrl(self, imageUrl):
+        '''
+        Convert image name to our internal naming. 
+          original image:             http://www.kidcity.ro/data_files/product_photos/9797/large_1.jpg
+          after conversion should be: 9797_large_1.jpg
+        :param article:
+        '''
+        url = imageUrl.replace("\\", "/")
+        filename = ""
+        if url!="":
+            path,file=os.path.split(url)
+            extension = url[url.rfind("."):]
+            lastDirectoryName = url.split('/')[-2]	    
+            
+            filename = lastDirectoryName + "_" + file
+            
+            filename = filename.replace(" ", "-")
+            filename = filename.replace("%20", "-")		
+
+        return filename
+
     def ComputeImages(self, article):
         '''
         Convert image names to our format. 
@@ -609,27 +711,29 @@ class HDREArticles(Articles):
         :param article:
         '''
         #create a new first element that will include the link to small image
-        newImageNames = [article.images[0]]
+        newImageNames = [article.imagesUrl[0]]
         newImageNames.extend(article.images)          
         
         for i in range(0, len(newImageNames)):
-        	fullPath = newImageNames[i].replace("\\", "/")
-        	
-        	if fullPath=="":
-        		newPath = ""
-        	else:
-        		path,file=os.path.split(fullPath)
-        		extension = fullPath[fullPath.rfind("."):]
-        		lastDirectoryName = fullPath.split('/')[-2]	    
-        		
-        		#Extract all characters until second underscore.                
-        		if i==0:
-        			#Path to small image, append an _s
-        			newPath = "fileadmin/img/" + lastDirectoryName + "_" + file[:file.rfind(".")] + "_s" + extension
-        		else:
-        			newPath = "fileadmin/img/" + lastDirectoryName + "_" + file
-        			
-        	newImageNames[i] = newPath
+          fullPath = newImageNames[i].replace("\\", "/")
+          
+          if fullPath=="":
+            newPath = ""
+          else:
+            path,file=os.path.split(fullPath)
+            extension = fullPath[fullPath.rfind("."):]
+            lastDirectoryName = fullPath.split('/')[-2]	    
+            
+            #Extract all characters until second underscore.                
+            if i==0:
+              #Path to small image, append an _s
+              newPath = "fileadmin/img/" + lastDirectoryName + "_" + file[:file.rfind(".")] + "_s" + extension
+            else:
+              newPath = "fileadmin/img/" + lastDirectoryName + "_" + file
+          
+          newPath = newPath.replace(" ", "-")
+          newPath = newPath.replace("%20", "-")		
+          newImageNames[i] = newPath
         
         # Extend the list to the maximum elelemnts
         for i in range(len(newImageNames), 13):
@@ -672,13 +776,13 @@ class HaiducelArticles(Articles):
                                                   subcategory = row["v_categories_name_2_1"],
                                                   quantity = row["v_products_quantity"],
                                                   supplier = row["v_products_supplier"],
-                                                  images = [row["v_products_image"], 
-                                                            row["v_products_images_image_1"], row["v_products_images_image_2"], 
-                                                            row["v_products_images_image_3"], row["v_products_images_image_4"],
-                                                            row["v_products_images_image_5"], row["v_products_images_image_6"],
-                                                            row["v_products_images_image_7"], row["v_products_images_image_8"],
-                                                            row["v_products_images_image_9"], row["v_products_images_image_10"], 
-                                                            row["v_products_images_image_11"],row["v_products_images_image_12"]])) 
+                                                  imagesUrl = [row["v_products_image"], 
+                                                               row["v_products_images_image_1"], row["v_products_images_image_2"], 
+                                                               row["v_products_images_image_3"], row["v_products_images_image_4"],
+                                                               row["v_products_images_image_5"], row["v_products_images_image_6"],
+                                                               row["v_products_images_image_7"], row["v_products_images_image_8"],
+                                                               row["v_products_images_image_9"], row["v_products_images_image_10"], 
+                                                               row["v_products_images_image_11"],row["v_products_images_image_12"]])) 
          print ("    import doe ")
          return -1          
 
@@ -775,7 +879,7 @@ class BebeBrandsArticles(Articles):
                                                        description = row[ self.columnNo["description"]],
                                                        weight = 0, #no info in feed
                                                        supplier = "HBBA",
-                                                       images = images))
+                                                       imagesUrl = images))
                   
                   else:
                       print("     * articol ignorat, lipseste modelul (id): ", row[self.columnNo["title"]])    
@@ -796,6 +900,8 @@ class BebeBrandsArticles(Articles):
             return "Inactive"
     
 
+
+
     
     def ComputeImages(self, article):
         '''
@@ -806,7 +912,7 @@ class BebeBrandsArticles(Articles):
         '''
         
         #create a new first element that will include the link to small image
-        newImageNames = [article.images[0]]
+        newImageNames = [article.imagesUrl[0]]
         newImageNames.extend(article.images)          
         
         for i in range(0, len(newImageNames)):
@@ -824,7 +930,9 @@ class BebeBrandsArticles(Articles):
                     newPath = "HBBA/" + file[:file.rfind(".")] + "_s" + extension
                 else:
                     newPath = "HBBA/" + file
-                    
+            
+            newPath = newPath.replace(" ", "-")
+            newPath = newPath.replace("%20", "-")      
             newImageNames[i] = newPath
         
         # Extend the list to the maximum elements
@@ -881,7 +989,7 @@ class BabyShopsArticles(Articles):
                                                   description = descriere,
                                                   weight = greutate,
                                                   supplier = "HMER",
-                                                  images = images)) 
+                                                  imagesUrl = images)) 
                   else:
                       print("     * articol ignorat, lipseste modelul (id): ", row["Name"])         
                  
@@ -908,7 +1016,7 @@ class BabyShopsArticles(Articles):
         '''
         
         #create a new first element that will include the link to small image
-        newImageNames = [article.images[0]]
+        newImageNames = [article.imagesUrl[0]]
         newImageNames.extend(article.images)          
         
         for i in range(0, len(newImageNames)):
@@ -926,7 +1034,9 @@ class BabyShopsArticles(Articles):
                     newPath = "HMER/" + file[:file.rfind(".")] + "_s" + extension
                 else:
                     newPath = "HMER/" + file
-                
+            
+            newPath = newPath.replace(" ", "-")
+            newPath = newPath.replace("%20", "-")  
             newImageNames[i] = newPath
         
         # Extend the list to the maximum elements
@@ -972,7 +1082,7 @@ class KidsDecorArticles(Articles):
                                                   initialCategory = row[0],
                                                   category = row[0],
                                                   supplier = "HDEC",
-                                                  images = [row[7], "", "", "", "", "", "", "", "", "", "", ""]))
+                                                  imagesUrl = [row[7], "", "", "", "", "", "", "", "", "", "", ""]))
          return -1
 
     def ComputeAvailability(self, article):
@@ -995,7 +1105,7 @@ class KidsDecorArticles(Articles):
         :param article:
         '''
         #create a new first element that will include the link to small image
-        newImageNames = [article.images[0]]
+        newImageNames = [article.imagesUrl[0]]
         newImageNames.extend(article.images)
            
         for i in range(0, len(newImageNames)):
@@ -1016,7 +1126,9 @@ class KidsDecorArticles(Articles):
                      newPath = "HDEC/" + file[:posPoint] + "_s" + extension  
                  else:
                      newPath = "HDEC/" + file[:posPoint] + extension
-                 
+             
+             newPath = newPath.replace(" ", "-")
+             newPath = newPath.replace("%20", "-")   
              newImageNames[i] = newPath   
         return newImageNames
      
@@ -1070,7 +1182,7 @@ class HubnersArticles(Articles):
                                               description = descriere,
                                               weight = "",
                                               supplier = "HHUB",
-                                              images = images)) 
+                                              imagesUrl = images)) 
                 else:
                     print("     * articol ignorat, lipseste modelul (id): ", row["title"])         
          
@@ -1099,7 +1211,7 @@ class HubnersArticles(Articles):
         '''
         
         #create a new first element that will include the link to small image
-        newImageNames = [article.images[0]]
+        newImageNames = [article.imagesUrl[0]]
         newImageNames.extend(article.images)          
         
         for i in range(0, len(newImageNames)):
@@ -1117,8 +1229,11 @@ class HubnersArticles(Articles):
                     newPath = "HHUB/" + file[:file.rfind(".")] + "_s" + extension
                 else:
                     newPath = "HHUB/" + file
-                
+            
+            newPath = newPath.replace(" ", "-")
+            newPath = newPath.replace("%20", "-")
             newImageNames[i] = newPath
+            
         
         # Extend the list to the maximum elements
         for i in range(len(newImageNames), 13):
