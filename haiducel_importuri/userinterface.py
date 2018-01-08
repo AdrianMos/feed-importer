@@ -14,7 +14,7 @@ class UserInterface(object):
         print(separator + '\n')
         print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' ')) 
         print(separator)
-        print("V 4.0, 19.11.2017\n")
+        print("V 5.0, 06.01.2018\n")
     
     def DisplayOptions(self):
         

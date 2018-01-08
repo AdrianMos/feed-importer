@@ -13,8 +13,18 @@ def _InsertBreakBeforeDashIfNotWithinWord(matchObj):
     Used by a regex function. Called when a specific string pattern is found.
     '''
     match = matchObj.group(0)
-    isDashWithinWord = match in ["sa-s", "ce-i", "tr-u", "tr-o", "l-am", "i-am", "a-si", "sa-si", "sa-l", "a-ti", "si-a", "non-toxic", "ultra-compact", "mini-geam", "full-option", "anti-rasturnare", "3-10", "0-10"]; #from word: sa-si, ce-i, dintr-un, dintr-o
+    #print(" " + match)
+    knownDashWords = ["a-si", "a-l", "ce-i", "intr-un", "intr-unul", "intr-o", "l-am", "i-am",  "sa-si", "sa-l", "a-ti", "si-a",
+                     "dintr-o", "dintr-un", "non-toxic", "non-toxice", "ultra-compact", "anti-rasturnare",
+                      "mini-geam", "full-option", "crescandu-l", "nou-nascuti", "nou-nascut", "non-alergic",
+                      "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i",
+                      "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si",
+                      "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
+                      "mega-rampa"];
+
+    #TODO: treat separately mega, anti, non...
     
+    isDashWithinWord = match in knownDashWords    
     if (isDashWithinWord):
         return match
     else:
@@ -31,7 +41,8 @@ class DescriptionProcessor(object):
     def CleanDescription(inData):
         
         text = inData.replace("MyKids","").replace("BABY MIX","")
-        
+
+
         text = DescriptionProcessor._InsertSpaceBetweenSentences(text)
         text = DescriptionProcessor._InsertSpaceAfterComma(text)
         text = DescriptionProcessor._ReplaceUnknownRomanianCharacters(text)
@@ -39,24 +50,33 @@ class DescriptionProcessor(object):
         text = DescriptionProcessor._RemovedUnallowedTags(text)      
         text = DescriptionProcessor._ConvertBreaksToOurFormat(text)
         text = DescriptionProcessor._ReplaceDoubleBreaksWithOneBreak(text)
+        text = DescriptionProcessor._RemoveEmptyParagraphs(text)
     
-        text = DescriptionProcessor._MoveDashedLinesOnSeparateLine(text)
+        text = DescriptionProcessor._MoveDashedLinesOnNewRow(text)
         
         text = DescriptionProcessor._MakeSubtitlesDistinct(text)
         text = DescriptionProcessor._ReplaceDoubleBreaksWithOneBreak(text)
+        text = DescriptionProcessor._RemoveBreakAfterParagraphStart(text)
      
         return text
     
     @staticmethod   
-    def _MoveDashedLinesOnSeparateLine(inData):
-        
-            zeroOrMoreSpaceChars = r" *" 
-            zeroOrOneChar = r".?"
-            wordChar = r"\w"
+    def _MoveDashedLinesOnNewRow(inData):
             
-            findPattern = zeroOrOneChar + zeroOrOneChar + "-" + zeroOrMoreSpaceChars + wordChar
-    #       findPattern = r".?.?- *\w" 
-            return re.sub(findPattern, _InsertBreakBeforeDashIfNotWithinWord, inData)
+            zeroOrMoreSpaceChars = r" *" 
+            wordNoNumbersAtLeastOneChar = r"[^\W\d_]+"
+            wordNoNumbers = r"[^\W\d_]*"
+            
+            findPattern =  wordNoNumbers + zeroOrMoreSpaceChars + "-" + zeroOrMoreSpaceChars + wordNoNumbersAtLeastOneChar
+            processed = re.sub(findPattern, _InsertBreakBeforeDashIfNotWithinWord, inData)
+            
+            #find patters of chars excepting numbers, followed by dashed and number, e.g. "it includes: - 4 pillows -2 blankets"
+            number = r"[0-9]"
+            anyCharExceptNumber = r"[^0-9]"
+            findPattern =  anyCharExceptNumber + zeroOrMoreSpaceChars + "-" + zeroOrMoreSpaceChars + number
+            processed = re.sub(findPattern, _InsertBreakBeforeDashIfNotWithinWord, processed)
+
+            return processed
     
     
     @staticmethod
@@ -103,6 +123,12 @@ class DescriptionProcessor(object):
     @staticmethod   
     def _ReplaceDoubleBreaksWithOneBreak(inData):
         return re.sub(r"< ?br ?/> ?< ?br ?/>", r"<br />", inData)
+        
+    @staticmethod   
+    def _RemoveBreakAfterParagraphStart(inData):
+        processed = re.sub(r"<p> *< ?br ?/ ?>", r"<p>", inData)
+        processed = re.sub(r"<p ?> *< ?/ ?br ?>", r"<p>", processed)
+        return processed
     
     @staticmethod
     def _ReplaceUnknownRomanianCharacters(inData):
@@ -110,16 +136,30 @@ class DescriptionProcessor(object):
    
     @staticmethod
     def _RemovedUnallowedTags(inData):   
-        text = inData.replace("<span", "<p").replace("<div", "<p")
+        text = inData.replace("<div", "<p").replace("&lsquo", "\"").replace("&rsquo", "\"")
+        text = text.replace("&ndash", "-")
         
         # Remove invalid tags but keep their content.
-        allowedTags = ['p', 'i', 'b', 'strong', 'br']
-        text = bleach.clean(text, allowedTags, strip=True)  
+        allowedTags = ['p', 'i', 'b', 'strong', 'br', 'span']
+        text = bleach.clean(text, allowedTags, strip=True)
+
+        text = text.replace("<span>", " ").replace("</span>", " ")
+
+        oneOrMoreSpaceChars = r"\s+"
+        text = re.sub(oneOrMoreSpaceChars, ' ', text)
+        
         return text
     
     @staticmethod
     def _ConvertBreaksToOurFormat(inData):     
         return inData.replace("<br>", "<br />")
+
+    @staticmethod
+    def _RemoveEmptyParagraphs(inData):
+        zeroOrMoreSpaceChars = r" *"
+        findPattern = r"<p>" + zeroOrMoreSpaceChars + r"</p>"
+        return re.sub(findPattern, "", inData)
+        
        
     def __init__(self, params):
         '''

@@ -21,28 +21,9 @@ class Article(object):
         self.imagesUrl = [img.strip() for img in imagesUrl]
         self.imageSmallName = ""
         self.imageSmallPath = ""
-        self.images = [""]*12
         self.imagesNames = [""]*12
         self.imagesPaths = [""]*12
-        
-        # prepare the image names as we use them
-        #for i, url in enumerate(self.imagesUrl):
-        #    customName = url
-        #    customName = customName.replace("\\", "/")
-        #    # extract only the filename from whole path
-        #    customName = customName[customName.rfind("/")+1:]
-        #    # replace spaces by dash "-"
-        #    customName = customName.replace(" ", "-")
-        #    customName = customName.replace("%20", "-")
-        #    self.images[i] = customName
-        #    #print("image " + str(i) + " name: " + self.images[i])
-
-        #self.imageSmall = GetSmallImageName(self.images[0])
-        
-        # Extend the images list to the maximum elelemnts
-        for i in range(len(self.imagesUrl), 12):
-            self.imagesUrl.append("")
-     
+             
      
     def IsSameArticle(self, articleToCompare):
         if self.id == articleToCompare.id:

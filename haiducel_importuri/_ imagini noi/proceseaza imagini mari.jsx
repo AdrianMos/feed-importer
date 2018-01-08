@@ -1,78 +1,99 @@
-﻿// Script version: V2.1   
-   main();
-function main(){
-var max;
-var folders =[];
-//var topLevel = Folder.selectDialog("Please select top level folder");   
-var topLevel = Folder('C:/haiducel importuri/_ imagini noi/mari neprocesate')
-if(topLevel == null ) return;
-//var outPutFolder = Folder.selectDialog("Please select output folder");
-var outPutFolder = Folder('C:/haiducel importuri/_ imagini noi/procesate')
-if(outPutFolder == null ) return;
-//get a list of all sub folders
-folders = FindAllFolders(topLevel, folders);
-//add selected foler
-folders.unshift(topLevel);
-// set up a counter
-var Counter = 1;
-//iterate through the folder list
-for(var f in folders){
-   var fileList = folders[f].getFiles(/.+\.(?:jpg|jpe?g|[ew]mf|eps|tiff?|bmp|png)$/i)
-   for(var j in fileList){
-       open(fileList[j]);
-// get a reference to the current (active) document and store it in a variable named "doc"
-doc = app.activeDocument; 
-// change the color mode to RGB. Important for resizing GIFs with indexed colors, to get better results
-doc.changeMode(ChangeMode.RGB); 
-// these are our values for the end result width and height (in pixels) of our image
+﻿// Script version: V3.0, 07.01.2018
+main();
 
-
-if ((doc.width>doc.height) && (doc.width>UnitValue(800,"px")))
-	doc.resizeImage(UnitValue(800,"px"),null,null,ResampleMethod.BICUBIC);
-else if ((doc.width<doc.height) && (doc.height>UnitValue(800,"px")))
-	doc.resizeImage(null,UnitValue(600,"px"),null,ResampleMethod.BICUBIC);
-	
-var fileExtension = fileList[j].name.substring(fileList[j].name.lastIndexOf("."), fileList[j].name.length)
-var saveFile = new File(outPutFolder+"/"+TrimFileName(fileList[j].name)+fileExtension);
-
-
-
-//Save document
-SaveForWeb(saveFile,60);
-//close the document
-app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
-//Increment counter
-Counter++;
-       }
+function main() {
+    
+    var inFolder = Folder(scriptPath() + '/mari neprocesate')
+    if(inFolder == null) {
+        alert("Input folder nok!");
+        return;
     }
+        
+    var outFolder = Folder(scriptPath() + '/procesate');
+    if(outFolder == null) {
+        alert("Output folder nok!");
+        return;
+    }
+    
+    var folders = [];
+    folders = getSubfolders(inFolder, folders);
+    folders.unshift(inFolder); // add top folder to array
+    
+    for(var f in folders) {
+       var files = folders[f].getFiles(/.+\.(?:jpg|jpe?g|[ew]mf|eps|tiff?|bmp|png)$/i)
+       
+       for(var j in files) {
+            try {
+                open(files[j]);
+                doc = app.activeDocument; 
+                doc.changeMode(ChangeMode.RGB); 
+                
+                if ((doc.width>doc.height) && (doc.width>UnitValue(800,"px")))
+                    doc.resizeImage(UnitValue(800,"px"),null,null,ResampleMethod.BICUBIC);
+                else if ((doc.width<doc.height) && (doc.height>UnitValue(800,"px")))
+                    doc.resizeImage(null,UnitValue(600,"px"),null,ResampleMethod.BICUBIC);
+               
+                var imageQuality = 60;
+                var outFilename = generateFilePath(outFolder, files[j]);
 
+                var resizedFile = new File(outFilename);
+                saveForWeb(resizedFile, imageQuality);
+                app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);             
+            }
+            catch(err) {
+              
+                copyFileToErrorFolder(files[j]);        
+                alert("Eroare imagine: " + files[j].displayName + 
+                      ". Imaginea a fost copiata in folderul /erori imagini mari/. Trebuie prelucrata manual !");  
+            }
+        }
+    }
+    
+    alert("Procesare finalizata !");  
 }
-function FindAllFolders( srcFolderStr, destArray) {
-   var fileFolderArray = Folder( srcFolderStr ).getFiles();
-   for ( var i = 0; i < fileFolderArray.length; i++ ) {
-      var fileFoldObj = fileFolderArray[i];
-      if ( fileFoldObj instanceof File ) {         
-      } else {
-         destArray.push( Folder(fileFoldObj) );
-      FindAllFolders( fileFoldObj.toString(), destArray );
-      }
-   }
-   return destArray;
+
+function copyFileToErrorFolder(file) {
+    var errorFolder = Folder(scriptPath() + '/erori/erori imagini mari');
+    file.copy(decodeURI(errorFolder) + "/" + file.displayName)       
 }
 
 
-function TrimFileName(fileName) { 
-	var trimedFileName = fileName.substring(0, fileName.lastIndexOf(".")); 
-	
-	return trimedFileName;
+function generateFilePath(folder, file) {
+  
+    //var extension = file.name.substring(file.name.lastIndexOf("."), file.name.length);
+    //var fileNameNoExtension = file.name.substring(0, file.name.lastIndexOf("."));
+    return folder + "/" + file.name;
 };
 
-function SaveForWeb(saveFile,jpegQuality) {
-var sfwOptions = new ExportOptionsSaveForWeb(); 
-   sfwOptions.format = SaveDocumentType.JPEG; 
-   sfwOptions.includeProfile = false; 
-   sfwOptions.interlaced = 0; 
-   sfwOptions.optimized = true; 
-   sfwOptions.quality = jpegQuality; //0-100 
-activeDocument.exportDocument(saveFile, ExportType.SAVEFORWEB, sfwOptions);
+
+function scriptPath() {
+    var currentScript = new File($.fileName);  
+    return currentScript.path;
+}    
+
+function isFolder(item) {
+    return !(item instanceof File)
+}
+
+function getSubfolders(path, outArray) {
+    var items = Folder(path).getFiles();
+    
+    for (var i = 0; i<items.length; i++) {
+        if (isFolder(items[i])) {         
+            outArray.push(Folder(items[i]));
+            getSubfolders(items[i].toString(), outArray);
+        }
+   }
+   return outArray;
+}
+
+
+function saveForWeb(resizedFile, imageQuality) {
+    var options = new ExportOptionsSaveForWeb(); 
+    options.format = SaveDocumentType.JPEG; 
+    options.quality = imageQuality; //0-100 
+    options.includeProfile = false; 
+    options.interlaced = 0; 
+    options.optimized = true; 
+    activeDocument.exportDocument(resizedFile, ExportType.SAVEFORWEB, options);
 }

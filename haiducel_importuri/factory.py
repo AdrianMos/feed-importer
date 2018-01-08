@@ -1,5 +1,13 @@
 from articles import *
 from article import Article
+from suppliers.haiducel import ArticlesHaiducel
+from suppliers.nancy import ArticlesNancy
+from suppliers.bebex import ArticlesBebex
+from suppliers.bebebrands import ArticlesBebeBrands
+from suppliers.kidsdecor import ArticlesKidsDecor
+from suppliers.babydreams import ArticlesBabyDreams
+from suppliers.babyshops import ArticlesBabyShops
+from suppliers.hubners import ArticlesHubners
 
 from pathbuilder import PathBuilder
 from parameters import Parameters
@@ -28,19 +36,19 @@ class Factory(object):
         
         
         if code == "NAN":
-            newObject = NANArticles(code, paths, credentials, parameters)    
+            newObject = ArticlesNancy(code, paths, credentials, parameters)    
         elif code == "HDRE":
-            newObject = HDREArticles(code, paths, credentials, parameters)
+            newObject = ArticlesBabyDreams(code, paths, credentials, parameters)
         elif code == "BEB":
-            newObject = BEBArticles(code, paths, credentials, parameters)
+            newObject = ArticlesBebex(code, paths, credentials, parameters)
         elif code == "HBBA":
-            newObject = BebeBrandsArticles(code, paths, credentials, parameters)
+            newObject = ArticlesBebeBrands(code, paths, credentials, parameters)
         elif code == "HMER":
-            newObject = BabyShopsArticles(code, paths, credentials, parameters)
+            newObject = ArticlesBabyShops(code, paths, credentials, parameters)
         elif code == "HDEC":
-            newObject = KidsDecorArticles(code, paths, credentials, parameters)
+            newObject = ArticlesKidsDecor(code, paths, credentials, parameters)
         elif code == "HHUB":
-            newObject = HubnersArticles(code, paths, credentials, parameters)
+            newObject = ArticlesHubners(code, paths, credentials, parameters)
         else:
             newObject = None
         
@@ -51,7 +59,7 @@ class Factory(object):
     def CreateHaiducelFeedObject(self):
         code = "Haiducel"
         paths = PathBuilder(code)
-        newObject = HaiducelArticles(code, paths, None, None);
+        newObject = ArticlesHaiducel(code, paths, None, None);
         
         return newObject
     
