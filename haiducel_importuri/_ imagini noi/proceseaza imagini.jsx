@@ -117,16 +117,12 @@ function processImages(config) {
 
 
 function setBackgroundColor(r,g,b) {
-    /*var color = app.backgroundColor;
+    var color = app.backgroundColor;
     color.rgb.red = r;
     color.rgb.green = g;
     color.rgb.blue = b;
-    app.backgroundColor = color;*/
-    
-    app.backgroundColor.rgb.red = r;
-    app.backgroundColor.rgb.green = g;
-    app.backgroundColor.rgb.blue = b;
-}
+    app.backgroundColor = color;
+ }
   
 
 function showBrokenImageMessage(file, folder) {
