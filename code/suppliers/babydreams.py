@@ -1,16 +1,15 @@
 import sys
 import os.path
+import logging
+import csv
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from code.suppliers.articles import Articles
 from article import Article
 
-import csv
 
 class ArticlesBabyDreams(Articles):
-    '''
-    Handles the BabyDreams artiles (HDRE)
-    '''
      
     def DownloadFeed(self, credentials):
     
@@ -63,9 +62,6 @@ class ArticlesBabyDreams(Articles):
                 
         return numErrors
             
-            
-    
-          
            
     def ComputeAvailability(self, article):
         '''

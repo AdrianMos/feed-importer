@@ -12,28 +12,16 @@ from code.factory import Factory
 from code.export import Export
 from code.operations import Operations
 from code.pathbuilder import PathBuilder
-import time
+from code.messages import *
 
 export = Export()
-
-MSG_WARNING_LESS_50_ARTICLES = 'ATENTIE: Posibila eroare in datele '  + \
-                               'furnizorului. Exista mai putin de 50 ' + \
-                               'de articole.'
-
-MSG_FEED_ERRORS = '\n\n***    Au fost gasite ERORI in feed. Exista ' + \
-                  'articole neimportate. ANUNTATI distribuitorul. ' + \
-                  'Detalii in log. Erori gasite:'
-
 
 def main():
     factory = Factory()
     user = UserInterface()
 
-
     user.DisplayHeader()
-    
     try:
-    
         
         user.DisplayOptions()
         userInput = user.AskInput('Introduceti numarul optiunii: >> ')
@@ -70,8 +58,8 @@ def main():
             print(MSG_FEED_ERRORS + str(errors))
         
         feed.ConvertToOurFormat()
-        print('    Articole importate: ' + str(feed.ArticlesCount()) + '. ' +
-              'Erori: ' + str(errors))
+        print('    Articole importate: ' + str(feed.ArticlesCount()) + '. ')
+
        
         if feed.ArticlesCount() < 50:
             logging.error(MSG_WARNING_LESS_50_ARTICLES)
@@ -83,7 +71,7 @@ def main():
         
         
         user.Title(' SALVARE FEED FORMAT STANDARD ')
-        filename = GenerateOutputFilename('Onlineshop', feed.code)
+        filename = PathBuilder.getOutputPath('Onlineshop', feed.code)
         export.ExportDataForOnlineshop(feed, filename)
         user.HorizontalLine()
         
@@ -141,46 +129,38 @@ def ProcessUpdatedArticles (haiducelFeed, supplierFeed):
     updatedArticles.paths = supplierFeed.paths    
     print('    Articole actualizate: '+ str(updateMessages.__len__())) 
 
-    filename = GenerateOutputFilename('articole existente cu' + 
-                                      ' pret sau status modificat',
-                                      supplierFeed.code)
+    outFile = PathBuilder.getOutputPath('articole existente cu' + 
+                                        ' pret sau status modificat',
+                                        supplierFeed.code)
     export.ExportPriceAndAvailabilityAndMessages(updatedArticles, 
-                                                  updateMessages, 
-                                                  filename)
+                                                 updateMessages, 
+                                                 outFile)
     return updatedArticles
 
+    
 def ProcessArticlesForDeletion (haiducelFeed, supplierFeed):
     
     removedArticles = Operations.SubstractArticles(haiducelFeed, supplierFeed)
     
     print('    Articole ce nu mai exista in feed: ' + 
           str(removedArticles.ArticlesCount()))
+    outFile = PathBuilder.getOutputPath('articole de sters', supplierFeed.code)
     export.ExportArticlesForDeletion(
                 removedArticles,
-                GenerateOutputFilename('articole de sters', supplierFeed.code))
+                outFile)
     return removedArticles
 
+    
 def ProcessNewArticles (haiducelFeed, supplierFeed):
     
     newArticles = Operations.SubstractArticles(supplierFeed, haiducelFeed)
     newArticles = Operations.RemoveUnavailableArticles(newArticles)
     newArticles.paths = supplierFeed.paths
-    print('    Articole noi in feed: ' + 
-          str(newArticles.ArticlesCount()))
-    export.ExportAllData(
-                newArticles, 
-                GenerateOutputFilename('articole noi', supplierFeed.code))
+    print('    Articole noi in feed: ' +  str(newArticles.ArticlesCount()))
+    outFile = PathBuilder.getOutputPath('articole noi', supplierFeed.code)
+    export.ExportAllData(newArticles,  outFile)
     return newArticles
-
-def GenerateOutputFilename(name, code):
-    return ('data/'
-            +code
-            + '/out/' 
-            + code 
-            + ' ' + name + ' ' 
-            + time.strftime('%Y-%m-%d')
-            + '.csv')
-
+    
 def InitLogFile(code):
     filename = PathBuilder.getLogPath(code)
     logging.basicConfig(filename = filename,

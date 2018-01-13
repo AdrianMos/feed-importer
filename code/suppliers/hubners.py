@@ -1,16 +1,15 @@
 import sys
 import os.path
+import logging
+import csv
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from code.suppliers.articles import Articles
 from article import Article
 
-import csv
 
 class ArticlesHubners(Articles):
-    '''
-    Handles the Hubners articles (HHUB)
-    '''  
     
     def Import(self):
         '''

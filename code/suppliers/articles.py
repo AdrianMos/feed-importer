@@ -1,8 +1,3 @@
-'''
-Created on 26.04.2014
-
-@author: adrian mos
-'''
 import sys
 import os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -17,7 +12,6 @@ import csv
 import os
 import collections
 import urllib.request
-import sys
 import pdb
 import logging
 from _ast import Try
@@ -29,14 +23,9 @@ import configparser
 
 
 class Articles(object):
-    '''
-    classdocs
-    '''
 
     def __init__(self, code, paths, credentials, parameters):
-        '''
-        Constructor
-        '''
+
         self.articleList = []
         self.code = code
         self.credentials = credentials
@@ -44,7 +33,8 @@ class Articles(object):
         self.parameters = parameters
         
         # Check the folders availability for this client. Create the folder structure if necessary.
-        clientFolder = os.path.join(os.getcwd(), "data", self.code, "out");
+        clientFolder = PathBuilder.getOutputFolderPath(code)
+        
         if not os.path.isdir(clientFolder):
             print("Folderul pentru acest cod nu exista, se va crea automat: " + clientFolder)
             
@@ -57,13 +47,12 @@ class Articles(object):
         
         
     def DownloadFeed(self, credentials):
-        '''
-        Downloads articles feeds
-        '''
+
         print("*** Descarcare feed " + self.code + "...")     
-                
-        if credentials.username != "": 
-            #authentication required
+               
+        isPasswordRequired = credentials.username != ""               
+        
+        if isPasswordRequired: 
             response = requests.get(self.parameters.downloadUrl,
                                     verify=False, 
                                     auth=(credentials.username, credentials.password))
@@ -100,7 +89,8 @@ class Articles(object):
             imgUrl = imgUrl.replace(" ", "%20")
             imgUrl = self.RepairBrokenUrl(imgUrl)
             
-            user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) Ubuntu/12.04 Chromium/18.0.1025.168 Chrome/18.0.1025.168 Safari/535.19'
+            user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) ' + \
+                         'Ubuntu/12.04 Chromium/18.0.1025.168 Chrome/18.0.1025.168 Safari/535.19'
             
             if credentials.username != "":
                                                         
@@ -153,9 +143,8 @@ class Articles(object):
     
     def RemoveCrapArticles(self):
         '''
-        Removes articles which shouldn't be imported.
+        Removes unwanted articles.
         '''
-        removedItems = 0
         crap = ['olita', 'olite', 'scutec', 'reductor wc', 'capac wc', 'servetel', 'tampoane', 'tampon', 'prosop', 'suzeta', 'sosetele', 'tacamuri']
         print("    Articolele ce contin in titlu ", crap, " sunt eliminate.")
         
@@ -213,7 +202,6 @@ class Articles(object):
          Import articles from file
          '''
          print ("*** Functionalitatea de import nu a fost implementata.")
-         
          return -1
          
     def Add(self, id, title, price, available, category, supplier):
@@ -232,8 +220,6 @@ class Articles(object):
     def ComputePrice(self, article):
         '''
         Calculates the new price that will be used in our database.
-        Use the promo price if available; decrease prices with 1 leu; Don't display prices <160 lei
-        :param article: article used for computing the price
         '''   
         return 0
         
@@ -295,7 +281,7 @@ class Articles(object):
     
     def GenerateImageNameFromUrl(self, imageUrl):
         '''
-        Converts the image url into our internal  file naming. 
+        Converts the image url into our internal file naming. 
           e.g:
           url: http://www.supplieraddres.ro/image name.jpg
           returns: success: "image-name.jpg"
@@ -337,12 +323,6 @@ class Articles(object):
         '''
         # Remove the product name from description
         description = article.description.replace(article.title, "")
-                
-        # Replace &lt;b&gt; with <b> and &lt;/b&gt with </b>
-        # Remove <b></b> tags with no text contained
-        #newDescription = newDescription.replace("&lt;b&gt;","<b>").replace("&lt;/b&gt","</b>").replace("<b></b>","")
-        #newDescription = newDescription.replace("<strong>:</strong>", "").replace("<strong> </strong>", "").replace("<strong></strong>", "")
-        
         return DescriptionProcessor.CleanDescription(description)    
         
     def ConvertToOurFormat(self):

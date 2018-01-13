@@ -1,14 +1,14 @@
 import sys
 import os.path
+import csv
+import logging
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from code.suppliers.articles import Articles
 from code.article import Article
 
-import csv
 
-
-      
 class ArticlesHaiducel(Articles):
     '''
     Handles the articles already imported in our database.
@@ -21,7 +21,8 @@ class ArticlesHaiducel(Articles):
          print ("    Fisier de import: " + self.paths.feedFileNamePath)
          
          if (not os.path.isfile(self.paths.feedFileNamePath)):
-             logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' + self.paths.feedFileNamePath)
+             logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' 
+                            + self.paths.feedFileNamePath)
              print("\nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
              sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
           
@@ -49,6 +50,5 @@ class ArticlesHaiducel(Articles):
                                                                row["v_products_images_image_7"], row["v_products_images_image_8"],
                                                                row["v_products_images_image_9"], row["v_products_images_image_10"], 
                                                                row["v_products_images_image_11"],row["v_products_images_image_12"]])) 
-         print ("    import doe ")
          return -1          
 

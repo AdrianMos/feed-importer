@@ -1,11 +1,14 @@
 import sys
 import os.path
+import csv
+import logging
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from code.suppliers.articles import Articles
 from article import Article
 
-import csv
+
 
 class ArticlesNancy(Articles):
     
@@ -61,7 +64,7 @@ class ArticlesNancy(Articles):
             return ""
             
         url = imageUrl.replace("\\", "/")
-        path,file=os.path.split(url)
+        path,file = os.path.split(url)
         
         isBrokenPath = (file=="" or path=="" or file.rfind("_")==-1 or file.rfind(".")==-1)
         if isBrokenPath:
