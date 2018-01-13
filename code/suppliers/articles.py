@@ -3,10 +3,14 @@ Created on 26.04.2014
 
 @author: adrian mos
 '''
-from article import Article
-from pathbuilder import PathBuilder
-from credentials import Credentials
-from descriptionprocessor import DescriptionProcessor
+import sys
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from code.article import Article
+from code.pathbuilder import PathBuilder
+from code.credentials import Credentials
+from code.descriptionprocessor import DescriptionProcessor
 
 import codecs
 import csv
@@ -40,7 +44,7 @@ class Articles(object):
         self.parameters = parameters
         
         # Check the folders availability for this client. Create the folder structure if necessary.
-        clientFolder = os.path.join(os.getcwd(), self.code, "out");
+        clientFolder = os.path.join(os.getcwd(), "data", self.code, "out");
         if not os.path.isdir(clientFolder):
             print("Folderul pentru acest cod nu exista, se va crea automat: " + clientFolder)
             

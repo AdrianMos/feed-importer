@@ -1,10 +1,10 @@
 '''
 Created on 27.04.2014
 
-@author: adrian
+@author: Adrian Mos
 '''
 import collections
-from articles import Articles
+from code.suppliers.articles import Articles
 
 class Operations(object):
     '''

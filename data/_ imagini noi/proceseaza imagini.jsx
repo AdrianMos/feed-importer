@@ -39,7 +39,7 @@ function generateSmallImageName(file) {
     var fileNameNoExtension = file.name.substring(0, file.name.lastIndexOf("."));
     
     return fileNameNoExtension + "_s" + extension;
-};       
+}      
      
 function resizeSmallImageAlgorithm() { 
     doc = app.activeDocument; 
@@ -57,7 +57,7 @@ function resizeSmallImageAlgorithm() {
 // LARGE IMAGES callbacks -------------------------------------------------------------
 function generateImageName(file) {
     return file.name;
-};
+}
 
 function resizeAlgorithm() {
     doc = app.activeDocument; 
@@ -68,7 +68,7 @@ function resizeAlgorithm() {
     else if (!isLandscape && (doc.height>UnitValue(800,"px")))
         doc.resizeImage(null,UnitValue(600,"px"),null,ResampleMethod.BICUBIC);     
 }
----------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------
 
 
 function processImages(config) {
@@ -109,12 +109,17 @@ function processImages(config) {
             }
             catch(err) {
                 copyFileToErrorFolder(files[j],  config.brokenImagesFolder); 
-                showBrokenImageMessage(files[j], config.brokenImagesFolder);                
+                showBrokenImageMessage(files[j], config.brokenImagesFolder);             
             }
         }
     }  
 }
 
+// HELPERS -----------------------------------------------------------------------------
+function scriptPath() {
+    var currentScript = new File($.fileName);  
+    return currentScript.path;
+}  
 
 function setBackgroundColor(r,g,b) {
     var color = app.backgroundColor;
@@ -124,33 +129,17 @@ function setBackgroundColor(r,g,b) {
     app.backgroundColor = color;
  }
   
-
 function showBrokenImageMessage(file, folder) {
     alert("Eroare imagine: " + file.displayName + 
           ". Imaginea a fost copiata in folderul " + 
           folder +
           ". Trebuie prelucrata manual !");
-}          
+}        
 
 function copyFileToErrorFolder(file, folder) {
     var errorFolder = Folder(scriptPath() + folder);
     file.copy(decodeURI(errorFolder) + "/" + file.displayName)       
 }
-
-
-function generateFilePath(file) {   
-  
-    var extension = file.name.substring(file.name.lastIndexOf("."), file.name.length);
-    var fileNameNoExtension = file.name.substring(0, file.name.lastIndexOf("."));
-    
-    return fileNameNoExtension + "_s" + extension;
-};
-
-
-function scriptPath() {
-    var currentScript = new File($.fileName);  
-    return currentScript.path;
-}    
 
 function isFolder(item) {
     return !(item instanceof File)
@@ -167,7 +156,6 @@ function getSubfolders(path, outArray) {
    }
    return outArray;
 }
-
 
 function saveForWeb(resizedFile, imageQuality) {
     var options = new ExportOptionsSaveForWeb(); 

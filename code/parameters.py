@@ -1,7 +1,7 @@
 '''
 Created on 15.11.2017
 
-@author: adrian
+@author: Adrian Mos
 '''
 import os.path
 import configparser

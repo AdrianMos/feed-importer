@@ -1,37 +1,13 @@
 '''
 Created on 26.12.2015
 
-@author: adrian mos
+@author: Adrian Mos
 '''
 # from bs4 import BeautifulSoup, NavigableString
 import bleach
 import re
 
     
-def _InsertBreakBeforeDashIfNotWithinWord(matchObj):
-    '''
-    Used by a regex function. Called when a specific string pattern is found.
-    '''
-    match = matchObj.group(0)
-    #print(" " + match)
-    knownDashWords = ["a-si", "a-l", "ce-i", "intr-un", "intr-unul", "intr-o", "l-am", "i-am",  "sa-si", "sa-l", "a-ti", "si-a",
-                     "dintr-o", "dintr-un", "non-toxic", "non-toxice", "ultra-compact", "anti-rasturnare",
-                      "mini-geam", "full-option", "crescandu-l", "nou-nascuti", "nou-nascut", "non-alergic",
-                      "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i",
-                      "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si",
-                      "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
-                      "mega-rampa"];
-
-    #TODO: treat separately mega, anti, non...
-    
-    isDashWithinWord = match in knownDashWords    
-    if (isDashWithinWord):
-        return match
-    else:
-        index = str(match).find('-')
-        return match[:index] + "<br />" + match[index:]
-
-
 class DescriptionProcessor(object):
     '''
     Cleans the article descriptions to a format handled well by the on-line platform.
@@ -68,13 +44,13 @@ class DescriptionProcessor(object):
             wordNoNumbers = r"[^\W\d_]*"
             
             findPattern =  wordNoNumbers + zeroOrMoreSpaceChars + "-" + zeroOrMoreSpaceChars + wordNoNumbersAtLeastOneChar
-            processed = re.sub(findPattern, _InsertBreakBeforeDashIfNotWithinWord, inData)
+            processed = re.sub(findPattern, DescriptionProcessor._InsertBreakBeforeDashIfNotWithinWord, inData)
             
             #find patters of chars excepting numbers, followed by dashed and number, e.g. "it includes: - 4 pillows -2 blankets"
             number = r"[0-9]"
             anyCharExceptNumber = r"[^0-9]"
             findPattern =  anyCharExceptNumber + zeroOrMoreSpaceChars + "-" + zeroOrMoreSpaceChars + number
-            processed = re.sub(findPattern, _InsertBreakBeforeDashIfNotWithinWord, processed)
+            processed = re.sub(findPattern, DescriptionProcessor._InsertBreakBeforeDashIfNotWithinWord, processed)
 
             return processed
     
@@ -106,6 +82,30 @@ class DescriptionProcessor(object):
         replacePattern = prettyHead + group + r":" + prettyTail
         
         return re.sub(searchPattern, replacePattern, inData)
+    
+    @staticmethod
+    def _InsertBreakBeforeDashIfNotWithinWord(matchObj):
+        '''
+        Used by a regex function. Called when a specific string pattern is found.
+        '''
+        match = matchObj.group(0)
+        #print(" " + match)
+        knownDashWords = ["a-si", "a-l", "ce-i", "intr-un", "intr-unul", "intr-o", "l-am", "i-am",  "sa-si", "sa-l", "a-ti", "si-a",
+                         "dintr-o", "dintr-un", "non-toxic", "non-toxice", "ultra-compact", "anti-rasturnare",
+                          "mini-geam", "full-option", "crescandu-l", "nou-nascuti", "nou-nascut", "non-alergic",
+                          "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i",
+                          "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si",
+                          "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
+                          "mega-rampa"];
+        
+        #TODO: treat separately mega, anti, non...
+        
+        isDashWithinWord = match in knownDashWords    
+        if (isDashWithinWord):
+            return match
+        else:
+            index = str(match).find('-')
+            return match[:index] + "<br />" + match[index:]
     
     @staticmethod
     def _ReplaceTripleBreaksWithTwoBreaks(inData):

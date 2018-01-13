@@ -1,5 +1,11 @@
-from articles import *
-from article import Article
+
+import os.path
+import sys
+
+
+from code.suppliers.articles import *
+from code.article import Article
+
 from suppliers.haiducel import ArticlesHaiducel
 from suppliers.nancy import ArticlesNancy
 from suppliers.bebex import ArticlesBebex
@@ -9,8 +15,9 @@ from suppliers.babydreams import ArticlesBabyDreams
 from suppliers.babyshops import ArticlesBabyShops
 from suppliers.hubners import ArticlesHubners
 
-from pathbuilder import PathBuilder
-from parameters import Parameters
+from code.pathbuilder import PathBuilder
+from code.parameters import Parameters
+from code.credentials import Credentials
 
 class Factory(object):
     """Factory for articles objects"""
@@ -19,21 +26,19 @@ class Factory(object):
     
     def CreateSupplierFeedObject(self, code):
         
-        #TODO(ArianMos): include the use of str_to_class()
-        #TODO(AdrianMos): decouple from user interface
+        #TODO: include the use of str_to_class()
+        #TODO: decouple from user interface
         # return reduce(getattr, str.split("."), sys.modules[__name__]).
-        
         
         paths = PathBuilder(code)
         credentials = Credentials("","")
         credentials.LoadFromFile(paths.credentialsFile)
+        
         parameters = Parameters()
         parameters.LoadFromFile(paths.configFile)
         
-        
         mappingFile = os.path.join("config", parameters.categoryMappingFile);
         parameters.categoryMap = parameters.ReadMapFromFile(mappingFile)
-        
         
         if code == "NAN":
             newObject = ArticlesNancy(code, paths, credentials, parameters)    
@@ -51,7 +56,6 @@ class Factory(object):
             newObject = ArticlesHubners(code, paths, credentials, parameters)
         else:
             newObject = None
-        
         return newObject;
     
 

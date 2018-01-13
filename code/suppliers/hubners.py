@@ -1,8 +1,11 @@
-from articles import Articles
+import sys
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from code.suppliers.articles import Articles
 from article import Article
 
 import csv
-import os.path
 
 class ArticlesHubners(Articles):
     '''

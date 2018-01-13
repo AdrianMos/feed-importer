@@ -1,9 +1,9 @@
 '''
 Created on 26.04.2014
 
-@author: adrian
+@author: Adrian Mos
 '''
-from articles import Articles
+from code.suppliers.articles import Articles
 import csv
 import collections
 

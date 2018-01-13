@@ -1,8 +1,12 @@
-from articles import Articles
-from article import Article
+import sys
+import os.path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from code.suppliers.articles import Articles
+from code.article import Article
 
 import csv
-import os.path
+
 
       
 class ArticlesHaiducel(Articles):

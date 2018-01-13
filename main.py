@@ -6,13 +6,12 @@ Created on 26.04.2014
 import os.path
 import sys
 import logging
-#add the current folder to the python paths
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from userinterface import UserInterface
-from factory import Factory
-from export import Export
-from operations import Operations
+from code.userinterface import UserInterface
+from code.factory import Factory
+from code.export import Export
+from code.operations import Operations
+from code.pathbuilder import PathBuilder
 import time
 
 export = Export()
@@ -52,7 +51,7 @@ def main():
         if feed is None:
             print('Optiune invalida. Program terminat.')
             sys.exit('Optiune invalida. Program terminat.')
-            
+        
         InitLogFile(feed.code)
         
         
@@ -174,7 +173,8 @@ def ProcessNewArticles (haiducelFeed, supplierFeed):
     return newArticles
 
 def GenerateOutputFilename(name, code):
-    return (code
+    return ('data/'
+            +code
             + '/out/' 
             + code 
             + ' ' + name + ' ' 
@@ -182,7 +182,7 @@ def GenerateOutputFilename(name, code):
             + '.csv')
 
 def InitLogFile(code):
-    filename = os.path.join(code, 'erori ' + code + '.log')
+    filename = PathBuilder.getLogPath(code)
     logging.basicConfig(filename = filename,
                         level = logging.INFO, 
                         filemode = 'w',
