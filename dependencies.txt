@@ -1,0 +1,4 @@
+must be installed by using Python/pip:
+  bleach
+  bs4
+  requests 
