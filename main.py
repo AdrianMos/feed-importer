@@ -13,32 +13,63 @@ from code.export import Export
 from code.operations import Operations
 from code.pathbuilder import PathBuilder
 from code.messages import *
+from code.menu import Menu
+from code.suppliers.articles import *
 
 export = Export()
 
+def exitApp(data):
+    print("... bye")
+    sys.exit(0)
+
+def myFunc1(data):
+    print("...hello " + str(data))
+    return None
+
+def constructMenu():
+    menu = Menu(title = "Optiuni disponibile:",
+                userMessage = 'Introduceti numarul optiunii:')
+    menu.addMenuItem(name="Iesire", callback=exitApp, arguments="")
+    menu.addMenuItem(name="Actualizare Nancy (NAN)",  callback=Factory.CreateSupplierFeedObject, arguments="ArticlesNancy")
+    menu.addMenuItem(name="Actualizare BabyDreams (HDRE)",  callback=Factory.CreateSupplierFeedObject, arguments="ArticlesBabyDreams")
+    
+    menu.addMenuItem(name="dummy",  callback=myFunc1, arguments="yellow")
+    return menu
+
+
 def main():
-    factory = Factory()
+    #factory = Factory()
     user = UserInterface()
 
     user.DisplayHeader()
+
+
+    menu = constructMenu()
+    feed = menu.openMenu()
+
+    if isinstance(feed, Articles):
+        print("YES it's an instance")
+    else:
+        print("NO it's not an instance")
+        sys.exit('..bye bye')
     try:
         
         user.DisplayOptions()
-        userInput = user.AskInput('Introduceti numarul optiunii: >> ')
-        if userInput == '1':
-            print('Program terminat.')
-            sys.exit('Program terminat.')
+##        userInput = user.AskInput('Introduceti numarul optiunii: >> ')
+##        if userInput == '1': 
+##            print('Program terminat.')
+##            sys.exit('Program terminat.')
         
         
-        code = user.GetCodeForOption(userInput)
-        if code is None:
-            print('Optiune invalida. Program terminat.')
-            sys.exit('Optiune invalida. Program terminat.')
-        
-        feed = factory.CreateSupplierFeedObject(code)
-        if feed is None:
-            print('Optiune invalida. Program terminat.')
-            sys.exit('Optiune invalida. Program terminat.')
+##        code = user.GetCodeForOption(userInput)
+##        if code is None:
+##            print('Optiune invalida. Program terminat.')
+##            sys.exit('Optiune invalida. Program terminat.')
+         
+##        feed = factory.CreateSupplierFeedObject(code)
+##        if feed is None:
+##            print('Optiune invalida. Program terminat.')
+##            sys.exit('Optiune invalida. Program terminat.')
         
         InitLogFile(feed.code)
         
@@ -85,7 +116,7 @@ def main():
         
         user.Title(' IMPORT DATE HAIDUCEL ')
         print('    Filtru distribuitor: ' + feed.code)
-        haiducelAllArticles = factory.CreateHaiducelFeedObject()
+        haiducelAllArticles = Factory.CreateHaiducelFeedObject()
         haiducelAllArticles.Import()
         haiducelFiltered = haiducelAllArticles.FilterBySupplier(feed.code)
         print('    Articole importate: ' + str(haiducelFiltered.ArticlesCount()))

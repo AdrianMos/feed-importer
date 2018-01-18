@@ -23,13 +23,13 @@ class Factory(object):
     """Factory for articles objects"""
     
       
-    
-    def CreateSupplierFeedObject(self, code):
+    @staticmethod
+    def CreateSupplierFeedObject(objectName):
         
-        #TODO: include the use of str_to_class()
         #TODO: decouple from user interface
-        # return reduce(getattr, str.split("."), sys.modules[__name__]).
-        
+
+        code = Factory.GetCodeForOption(objectName)
+        print("code : " + str(code) + ' for option ' + str(objectName))
         paths = PathBuilder(code)
         credentials = Credentials("","")
         credentials.LoadFromFile(paths.credentialsFile)
@@ -39,32 +39,41 @@ class Factory(object):
         
         mappingFile = os.path.join("config", parameters.categoryMappingFile);
         parameters.categoryMap = parameters.ReadMapFromFile(mappingFile)
-        
-        if code == "NAN":
-            newObject = ArticlesNancy(code, paths, credentials, parameters)    
-        elif code == "HDRE":
-            newObject = ArticlesBabyDreams(code, paths, credentials, parameters)
-        elif code == "BEB":
-            newObject = ArticlesBebex(code, paths, credentials, parameters)
-        elif code == "HBBA":
-            newObject = ArticlesBebeBrands(code, paths, credentials, parameters)
-        elif code == "HMER":
-            newObject = ArticlesBabyShops(code, paths, credentials, parameters)
-        elif code == "HDEC":
-            newObject = ArticlesKidsDecor(code, paths, credentials, parameters)
-        elif code == "HHUB":
-            newObject = ArticlesHubners(code, paths, credentials, parameters)
-        else:
+
+        try:
+            #call constructor for supplier object
+            #class name generated from objectName
+            parameters = '(code, paths, credentials, parameters)'
+            newObject = eval(str(objectName)+ parameters)
+        except:
             newObject = None
+
         return newObject;
     
-
-    
-    def CreateHaiducelFeedObject(self):
+ 
+    @staticmethod
+    def CreateHaiducelFeedObject():
         code = "Haiducel"
         paths = PathBuilder(code)
         newObject = ArticlesHaiducel(code, paths, None, None);
         
         return newObject
-    
 
+    @staticmethod
+    def GetCodeForOption(option):
+
+        code = None
+        objects = [['ArticlesNancy', 'NAN'],
+                   ['ArticlesBabyDreams', 'HDRE'],
+                   ['ArticlesBebex', 'BEB'],
+                   ['ArticlesBebeBrands', 'HBBA'],
+                   ['ArticlesBabyShops', 'HMER'],
+                   ['ArticlesKidsDecor', 'HDEC'],
+                   ['ArticlesHubners', 'HHUB']]             
+
+        for item in objects:
+            if item[0]==option:
+                code = item[1]
+                break
+        
+        return code
