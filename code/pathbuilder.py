@@ -10,8 +10,8 @@ class PathBuilder(object):
     '''
     classdocs
     '''
-    allImagesFolder = ""
-    mainImagesFolder = ""
+    allImagesFolder = os.path.join("data", "_ imagini noi", "mari neprocesate")
+    mainImagesFolder = os.path.join("data", "_ imagini noi", "mici neprocesate")
     feedFileNamePath = ""
     configFile = ""  
     credentialsFile = ""
@@ -20,9 +20,7 @@ class PathBuilder(object):
     def __init__(self, code):
         '''
         Constructor
-        '''
-        self.allImagesFolder =  os.path.join("data", "_ imagini noi", "mari neprocesate")
-        self.mainImagesFolder = os.path.join("data", "_ imagini noi", "mici neprocesate")
+        ''' 
         self.feedFileNamePath = os.path.join("data", code, "feed" + code + ".csv")
         self.configFile = os.path.join(os.getcwd(), "config", "config" + code + ".ini")
         self.credentialsFile = os.path.join(os.getcwd(), "config", "credentials", "credentials" + code + ".ini")
@@ -39,7 +37,7 @@ class PathBuilder(object):
         Returns the file path for converted output feeds.
         '''
         return ('data/'
-                +code
+                + code
                 + '/out/' 
                 + code 
                 + ' ' + name + ' ' 

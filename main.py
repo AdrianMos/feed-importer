@@ -15,36 +15,16 @@ from code.pathbuilder import PathBuilder
 from code.messages import *
 from code.menu import Menu
 from code.suppliers.articles import *
+import copy
 
 export = Export()
 
-def exitApp(data):
-    print("... bye")
-    sys.exit(0)
-
-def myFunc1(data):
-    print("...hello " + str(data))
-    return None
-
-def constructMenu():
-    menu = Menu(title = "Optiuni disponibile:",
-                userMessage = 'Introduceti numarul optiunii:')
-    menu.addMenuItem(name="Iesire", callback=exitApp, arguments="")
-    menu.addMenuItem(name="Actualizare Nancy (NAN)",  callback=Factory.CreateSupplierFeedObject, arguments="ArticlesNancy")
-    menu.addMenuItem(name="Actualizare BabyDreams (HDRE)",  callback=Factory.CreateSupplierFeedObject, arguments="ArticlesBabyDreams")
-    
-    menu.addMenuItem(name="dummy",  callback=myFunc1, arguments="yellow")
-    return menu
-
 
 def main():
-    #factory = Factory()
     user = UserInterface()
-
     user.DisplayHeader()
 
-
-    menu = constructMenu()
+    menu = builMenu()
     feed = menu.openMenu()
 
     if isinstance(feed, Articles):
@@ -55,21 +35,6 @@ def main():
     try:
         
         user.DisplayOptions()
-##        userInput = user.AskInput('Introduceti numarul optiunii: >> ')
-##        if userInput == '1': 
-##            print('Program terminat.')
-##            sys.exit('Program terminat.')
-        
-        
-##        code = user.GetCodeForOption(userInput)
-##        if code is None:
-##            print('Optiune invalida. Program terminat.')
-##            sys.exit('Optiune invalida. Program terminat.')
-         
-##        feed = factory.CreateSupplierFeedObject(code)
-##        if feed is None:
-##            print('Optiune invalida. Program terminat.')
-##            sys.exit('Optiune invalida. Program terminat.')
         
         InitLogFile(feed.code)
         
@@ -79,14 +44,15 @@ def main():
 
                 
         if user.AskYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':
-            feed.DownloadFeed(feed.credentials)
+            feed.DownloadFeed()       
         
         
         user.Title(' IMPORT DATE FEED ')
         print('\n    Feed de la distributor: ' + feed.code)
-        errors = feed.Import()
-        if errors > 0:
-            print(MSG_FEED_ERRORS + str(errors))
+        feed.Import()
+        #errors = feed.Import()
+        #if errors > 0:
+        #    print(MSG_FEED_ERRORS + str(errors))
         
         feed.ConvertToOurFormat()
         print('    Articole importate: ' + str(feed.ArticlesCount()) + '. ')
@@ -95,8 +61,7 @@ def main():
         if feed.ArticlesCount() < 50:
             logging.error(MSG_WARNING_LESS_50_ARTICLES)
             
-            if user.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES +
-                               ' Continuati?') == 'nu':
+            if user.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES + ' Continuati?') == 'nu':
                 sys.exit('Ati renuntat la procesare.')
         user.HorizontalLine()
         
@@ -109,34 +74,36 @@ def main():
         
         user.Title(' CURATARE FEED ')
         feed.RemoveCrapArticles()
-        print('    Articole importate, dupa eliminare: ' + 
-               str(feed.ArticlesCount()))
+        print('    Articole importate, dupa eliminare: ' + str(feed.ArticlesCount()))
         user.HorizontalLine()
         
         
         user.Title(' IMPORT DATE HAIDUCEL ')
         print('    Filtru distribuitor: ' + feed.code)
-        haiducelAllArticles = Factory.CreateHaiducelFeedObject()
-        haiducelAllArticles.Import()
-        haiducelFiltered = haiducelAllArticles.FilterBySupplier(feed.code)
-        print('    Articole importate: ' + str(haiducelFiltered.ArticlesCount()))
+        databaseFeed = Factory.CreateHaiducelFeedObject()
+        databaseFeed.Import()
+        print("5.1  - count:" + str(len(databaseFeed.articleList)))
+
+        
+        databaseFeed.FilterBySupplier(feed.code)
+        print('    Articole importate: ' + str(databaseFeed.ArticlesCount()))
         user.HorizontalLine()
         
         user.Title(' COMPARARI ')
         print('\n\nARTICOLE MODIFICATE')
-        ProcessUpdatedArticles(haiducelFiltered, feed)
+        ProcessUpdatedArticles(databaseFeed, feed)
         
         print('\n\nARTICOLE NOI')
-        newArticles = ProcessNewArticles(haiducelFiltered, feed)
+        newArticles = ProcessNewArticles(databaseFeed, feed)
 
         print('\n\nARTICOLE STERSE')
-        ProcessArticlesForDeletion(haiducelFiltered, feed)
+        ProcessArticlesForDeletion(databaseFeed, feed)
         user.HorizontalLine()
         
         
         user.Title(' DESCARCARE IMAGINI NOI ')
         if user.AskYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
-            newArticles.DownloadImages(feed.credentials);  
+            newArticles.DownloadImages();  
         user.HorizontalLine()
             
             
@@ -151,42 +118,37 @@ def main():
 
 def ProcessUpdatedArticles (haiducelFeed, supplierFeed):
     
-    updatedArticles, updateMessages = Operations.ExtractUpdatedArticles(
-                                                     haiducelFeed,
-                                                     supplierFeed)
-    # Set the saving paths & code for the updated articles identical to 
-    # the supplier's paths
-    # The updated articles belong to the supplier.
-    updatedArticles.paths = supplierFeed.paths    
-    print('    Articole actualizate: '+ str(updateMessages.__len__())) 
+    supplierFeedCopy = copy.deepcopy(supplierFeed)
+    supplierFeedCopy.IntersectWith(haiducelFeed)
+    supplierFeedCopy.RemoveArticlesWithNoUpdatesComparedToReference(reference=haiducelFeed)
 
-    outFile = PathBuilder.getOutputPath('articole existente cu' + 
-                                        ' pret sau status modificat',
-                                        supplierFeed.code)
-    export.ExportPriceAndAvailabilityAndMessages(updatedArticles, 
-                                                 updateMessages, 
+    messagesList = supplierFeedCopy.GetComparisonHumanReadableMessages(reference=haiducelFeed)
+
+            
+    print('    Articole actualizate: '+ str(supplierFeedCopy.ArticlesCount())) 
+    outFile = PathBuilder.getOutputPath('articole existente cu pret sau status modificat',
+                                        supplierFeedCopy.code)
+    export.ExportPriceAndAvailabilityAndMessages(supplierFeedCopy, 
+                                                 messagesList, 
                                                  outFile)
-    return updatedArticles
-
+    
     
 def ProcessArticlesForDeletion (haiducelFeed, supplierFeed):
     
     removedArticles = Operations.SubstractArticles(haiducelFeed, supplierFeed)
     
-    print('    Articole ce nu mai exista in feed: ' + 
-          str(removedArticles.ArticlesCount()))
+    print('    Articole ce nu mai exista in feed: ' + str(removedArticles.ArticlesCount()))
     outFile = PathBuilder.getOutputPath('articole de sters', supplierFeed.code)
-    export.ExportArticlesForDeletion(
-                removedArticles,
-                outFile)
+    export.ExportArticlesForDeletion(removedArticles,
+                                     outFile)
     return removedArticles
 
     
 def ProcessNewArticles (haiducelFeed, supplierFeed):
     
     newArticles = Operations.SubstractArticles(supplierFeed, haiducelFeed)
-    newArticles = Operations.RemoveUnavailableArticles(newArticles)
-    newArticles.paths = supplierFeed.paths
+    newArticles.RemoveInactiveArticles()
+
     print('    Articole noi in feed: ' +  str(newArticles.ArticlesCount()))
     outFile = PathBuilder.getOutputPath('articole noi', supplierFeed.code)
     export.ExportAllData(newArticles,  outFile)
@@ -199,5 +161,32 @@ def InitLogFile(code):
                         filemode = 'w',
                         format ='%(asctime)s     %(message)s')
 
+def exitApp(data):
+    print("... bye")
+    sys.exit(0)
+
+
+def builMenu():
+    menu = Menu(title = "Optiuni disponibile:",
+                userMessage = 'Alegeti:')
+    menu.addMenuItem(name="Iesire",
+                     callback=exitApp,
+                     arguments="")
+
+    suppliers = [["Actualizare Nancy (NAN) ok",        "ArticlesNancy"],
+                 ["Actualizare BabyDreams (HDRE)",     "ArticlesBabyDreams"],
+                 ["Actualizare Bebex (BEB)",           "ArticlesBebex"],
+                 ["Actualizare BebeBrands (HBBA) ok",  "ArticlesBebeBrands"],
+                 ["Actualizare BabyShops (HMER)",      "ArticlesBabyShops"],
+                 ["Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"],
+                 ["Actualizare Hubners (HHUB) ok",     "ArticlesHubners"]]
+
+    for supplier in suppliers:
+        menu.addMenuItem(name = supplier[0],
+                         callback = Factory.CreateSupplierFeedObject,
+                         arguments = supplier[1])
+        
+    return menu
+                        
 if __name__ == '__main__':
     main()

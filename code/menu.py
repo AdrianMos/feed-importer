@@ -15,9 +15,8 @@ class Menu:
     def printMenu(self):
         print(str("*"*len(self.title)))
         print(self.title)
-        print(str("*"*len(self.title)))
         for index, item in enumerate(self.items):
-            print(str(index) + ". " + item.name)
+            print("  " + str(index) + ". " + item.name)
             
     def isValidOption(self, option):
         if 0 <= option <= len(self.items)-1:
@@ -53,9 +52,3 @@ class Menu:
     def addMenuItem(self, name, callback, arguments):
         self.items.append(MenuItem(name, callback, arguments))
     
-
-#b=MenuItem('adf', myFunc1)
-#b=eval("MenuItem('mymenu', myFunc1)")
-#print(b.name)
-#b.function("end")
-#menu[a].function('data')

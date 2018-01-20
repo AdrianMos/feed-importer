@@ -11,7 +11,11 @@ from article import Article
 
 class ArticlesBabyDreams(Articles):
      
-    def DownloadFeed(self, credentials):
+    @staticmethod
+    def getSupplierCode():
+        return "HDRE" 
+    
+    def DownloadFeed(self):
     
         print("*** Descarcare feed HDRE...")
         response = urllib.request.urlopen('http://www.kidcity.ro/products_feed_csv.php')           

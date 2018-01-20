@@ -7,20 +7,10 @@ import os.path
 import configparser
 
 class Credentials(object):
-    '''
-    classdocs
-    '''
-    username = ""
-    password = ""
-     
 
-    def __init__(self, username, password):
-        '''
-        Constructor
-        '''
-        self.username = username
-        self.password = password
-          
+    def __init__(self):
+        self.username = ""
+        self.password = ""
      
     def LoadFromFile(self, file):
         

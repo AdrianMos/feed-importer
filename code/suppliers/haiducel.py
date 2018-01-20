@@ -14,6 +14,10 @@ class ArticlesHaiducel(Articles):
     Handles the articles already imported in our database.
     '''
     
+    @staticmethod
+    def getSupplierCode():
+        return "Haiducel"     
+    
     def Import(self):
          '''
          Import articles from csv file, oscommerce easypopulate format

@@ -18,6 +18,7 @@ from suppliers.hubners import ArticlesHubners
 from code.pathbuilder import PathBuilder
 from code.parameters import Parameters
 from code.credentials import Credentials
+from code.downloader import Downloader
 
 class Factory(object):
     """Factory for articles objects"""
@@ -26,13 +27,13 @@ class Factory(object):
     @staticmethod
     def CreateSupplierFeedObject(objectName):
         
-        #TODO: decouple from user interface
-
-        code = Factory.GetCodeForOption(objectName)
-        print("code : " + str(code) + ' for option ' + str(objectName))
+        code = Factory.GetSupplierCode(objectName)
         paths = PathBuilder(code)
-        credentials = Credentials("","")
+
+        credentials = Credentials()
         credentials.LoadFromFile(paths.credentialsFile)
+
+        downloader = Downloader(credentials, paths)
         
         parameters = Parameters()
         parameters.LoadFromFile(paths.configFile)
@@ -40,40 +41,29 @@ class Factory(object):
         mappingFile = os.path.join("config", parameters.categoryMappingFile);
         parameters.categoryMap = parameters.ReadMapFromFile(mappingFile)
 
+        
+        
         try:
             #call constructor for supplier object
             #class name generated from objectName
-            parameters = '(code, paths, credentials, parameters)'
-            newObject = eval(str(objectName)+ parameters)
+            arguments = '(code, paths, parameters, downloader)'
+            newObject = eval(str(objectName)+ arguments)
         except:
             newObject = None
-
+        
         return newObject;
     
  
     @staticmethod
     def CreateHaiducelFeedObject():
-        code = "Haiducel"
+        code = Factory.GetSupplierCode("ArticlesHaiducel")
+        print("code " + str(code))
         paths = PathBuilder(code)
         newObject = ArticlesHaiducel(code, paths, None, None);
         
         return newObject
 
     @staticmethod
-    def GetCodeForOption(option):
-
-        code = None
-        objects = [['ArticlesNancy', 'NAN'],
-                   ['ArticlesBabyDreams', 'HDRE'],
-                   ['ArticlesBebex', 'BEB'],
-                   ['ArticlesBebeBrands', 'HBBA'],
-                   ['ArticlesBabyShops', 'HMER'],
-                   ['ArticlesKidsDecor', 'HDEC'],
-                   ['ArticlesHubners', 'HHUB']]             
-
-        for item in objects:
-            if item[0]==option:
-                code = item[1]
-                break
-        
+    def GetSupplierCode(objectName):       
+        code = eval(str(objectName)+'.getSupplierCode()')     
         return code

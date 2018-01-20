@@ -10,7 +10,11 @@ from article import Article
 
 
 class ArticlesBabyShops(Articles):
-        
+
+    @staticmethod
+    def getSupplierCode():
+        return "HMER"     
+    
     def Import(self):
         '''
         Import articles from csv file

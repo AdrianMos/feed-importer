@@ -10,7 +10,11 @@ from article import Article
 
 
 class ArticlesHubners(Articles):
-    
+
+    @staticmethod
+    def getSupplierCode():
+        return "HHUB" 
+        
     def Import(self):
         '''
         Import articles from csv file

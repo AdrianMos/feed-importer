@@ -11,6 +11,10 @@ from article import Article
 
 class ArticlesBebex(Articles):
      
+    @staticmethod
+    def getSupplierCode():
+        return "BEB" 
+        
     def Import(self):
          '''
          Import articles from csv file

@@ -11,7 +11,11 @@ from article import Article
 
 
 class ArticlesBebeBrands(Articles):
-        
+
+    @staticmethod
+    def getSupplierCode():
+        return "HBBA"    
+   
     def __init__(self, code, paths, credentials, parameters):
         super().__init__(code, paths, credentials, parameters)
                 
