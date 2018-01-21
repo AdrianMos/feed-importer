@@ -32,17 +32,19 @@ class Articles(object):
         self.downloader = downloader
         
         # Check the folders availability for this client. Create the folder structure if necessary.
-        clientFolder = PathBuilder.getOutputFolderPath(code)
+        supplierFolder = PathBuilder.getOutputFolderPath(code)
         
-        if not os.path.isdir(clientFolder):
-            print("Folderul pentru acest cod nu exista, se va crea automat: " + clientFolder)
+        if not os.path.isdir(supplierFolder):
+            print("Folderul pentru acest distribuitor nu exista, se va crea automat: " + supplierFolder)
             
             try:
-                os.makedirs(clientFolder)
+                os.makedirs(supplierFolder)
             except OSError as ex:
                 sys.exit("Nu se poate crea folderul pentru acest cod: " + ex.reason)
-                logging.error("Articles constructor: nu se poate crea folderul <" + clientFolder + "> : mesaj : " + ex.reason)
+                logging.error("Articles constructor: nu se poate crea folderul <" + supplierFolder + "> : mesaj : " + ex.reason)
                 raise
+    
+    
     @staticmethod
     def getSupplierCode():
         raise NotImplementedError("Must override getSupplierCode")    
@@ -78,14 +80,10 @@ class Articles(object):
     def DownloadImages(self):
         self.downloader.DownloadImages(self.articleList)
        
-       
     
     def Import(self):
-         '''
-         Import articles from file
-         '''
-         print ("*** Functionalitatea de import nu a fost implementata.")
-         return -1
+         raise NotImplementedError("Must implement import functionality")    
+    
          
     def Add(self, id, title, price, available, category, supplier):
            
@@ -195,7 +193,6 @@ class Articles(object):
         article.imageSmallPath = self.GenerateImagePath(article, article.imageSmallName)
         
     
-        
     def ComputeDescription(self, article):
         '''
         Computes the  product description. Removes html format which might destroy the site aspect.
@@ -231,7 +228,6 @@ class Articles(object):
     def FilterBySupplier(self, supplier):
         #traverse backwards: if we remove an element, the lower indexes are not affected  
         for article in reversed(self.articleList):
-            #print('comparing: ' + str(article.id) )
             if article.supplier != supplier:
                 self.articleList.remove(article)
     
@@ -246,26 +242,25 @@ class Articles(object):
         Intersect the articles. The article items out of
         the intersection set are removed.
         '''                
-        #we check elements backwards, from last element to first one
-        #in this way, if we remove an element, the indexes for the
-        #unchecked ones (which have a lower index) are not affected
+        #traverse backwards: if we remove an element, the lower indexes are not affected  
+        logging.debug('IntersectWith() called')
         for i, art1 in reversed(list(enumerate(self.articleList))):
             found = False
             for art2 in feed.articleList:
-                #print('comparing: ' + str(art1.id) + " with " + str(art2.id))
+                logging.debug('  comparing: ' + str(art1.id) + " with " + str(art2.id))
                 if art1.IsSameArticle(art2):
                     found = True
                     break
             if found == False:
-                #print("removing art " + str(art1.id))
+                logging.debug('  removing art ' + str(art1.id))
                 self.articleList.pop(i)
 
         #print("articles after intersection: ")
         #for art1 in self.articleList:
         #    print(" " + str(art1.id))
 
-
     def RemoveArticlesWithNoUpdatesComparedToReference(self, reference):
+        #traverse backwards: if we remove an element, the lower indexes are not affected 
         for i, art1 in reversed(list(enumerate(self.articleList))):
             for art2 in reference.articleList:    
                 if art1.IsSameArticle(art2):
@@ -277,7 +272,7 @@ class Articles(object):
 
     def GetComparisonHumanReadableMessages(self, reference):
         messages=collections.OrderedDict()
-        for i, art1 in reversed(list(enumerate(self.articleList))):
+        for art1 in self.articleList:
             for art2 in reference.articleList:
                 if art1.IsSameArticle(art2):                
                     msg = ""

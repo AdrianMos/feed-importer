@@ -16,18 +16,6 @@ class UserInterface(object):
         print(separator)
         print("V 5.1, 06.01.2018\n")
     
-    def DisplayOptions(self):
-        
-        print("Optiuni disponibile:")
-        print("  1. Iesire\n"
-              "  2. Actualizare Nancy (NAN) ok\n"
-              "  3. Actualizare BabyDreams (HDRE)\n" 
-              "  4. Actualizare Bebex (BEB)\n"
-              "  5. Actualizare BebeBrands (HBBA) ok\n"
-              "  6. Actualizare BabyShops (HMER)\n"
-              "  7. Actualizare KidsDecor (HDEC)\n"  
-              "  8. Actualizare Hubners (HHUB) ok\n"
-              )
 
     def Title(self, title):
         
