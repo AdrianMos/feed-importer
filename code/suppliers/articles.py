@@ -270,6 +270,14 @@ class Articles(object):
                         self.articleList.pop(i)
                     break
 
+    def RemoveArticles(self, articlesToRemove):
+        #traverse backwards: if we remove an element, the lower indexes are not affected 
+        for i, art1 in reversed(list(enumerate(self.articleList))):
+            for art2 in articlesToRemove.articleList:    
+                if art1.IsSameArticle(art2):
+                    self.articleList.pop(i)
+                    break    
+
     def GetComparisonHumanReadableMessages(self, reference):
         messages=collections.OrderedDict()
         for art1 in self.articleList:

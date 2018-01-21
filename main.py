@@ -8,7 +8,6 @@ import os.path, sys, logging, copy
 from code.userinterface import UserInterface
 from code.factory import Factory
 from code.export import Export
-from code.operations import Operations
 from code.pathbuilder import PathBuilder
 from code.messages import *
 from code.menu import Menu
@@ -35,8 +34,8 @@ def main():
         InitLogFile(supplier.code)
         
         
-        print('  Procesare date de tipul ' +
-              supplier.__class__.__name__ + '.')
+        #print('  Procesare date de tipul ' +
+        #      supplier.__class__.__name__ + '.')
 
                 
         if user.AskYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':
@@ -76,12 +75,11 @@ def main():
         
         user.Title(' IMPORT DATE HAIDUCEL ')
         print('    Filtru distribuitor: ' + supplier.code)
+        
         shopData = Factory.CreateFeedObjectForShop()
         shopData.Import()
-        print("5.1  - count:" + str(len(shopData.articleList)))
-
-        
         shopData.FilterBySupplier(supplier.code)
+        
         print('    Articole importate: ' + str(shopData.ArticlesCount()))
         user.HorizontalLine()
         
@@ -112,41 +110,43 @@ def main():
     print('\n*** Program terminat ***')
 
 
-def ProcessUpdatedArticles (haiducelFeed, supplierFeed):
+def ProcessUpdatedArticles (shopData, supplier):
     
-    supplierFeedCopy = copy.deepcopy(supplierFeed)
-    supplierFeedCopy.IntersectWith(haiducelFeed)
-    supplierFeedCopy.RemoveArticlesWithNoUpdatesComparedToReference(reference=haiducelFeed)
+    supplierCopy = copy.deepcopy(supplier)
+    supplierCopy.IntersectWith(shopData)
+    supplierCopy.RemoveArticlesWithNoUpdatesComparedToReference(reference=shopData)
 
-    messagesList = supplierFeedCopy.GetComparisonHumanReadableMessages(reference=haiducelFeed)
+    messagesList = supplierCopy.GetComparisonHumanReadableMessages(reference=shopData)
 
             
-    print('    Articole actualizate: '+ str(supplierFeedCopy.ArticlesCount())) 
+    print('    Articole actualizate: '+ str(supplierCopy.ArticlesCount())) 
     outFile = PathBuilder.getOutputPath('articole existente cu pret sau status modificat',
-                                        supplierFeedCopy.code)
-    export.ExportPriceAndAvailabilityAndMessages(supplierFeedCopy, 
+                                        supplierCopy.code)
+    export.ExportPriceAndAvailabilityAndMessages(supplierCopy, 
                                                  messagesList, 
                                                  outFile)
     
     
-def ProcessArticlesForDeletion (haiducelFeed, supplierFeed):
+def ProcessArticlesForDeletion (shopData, supplier):
     
-    removedArticles = Operations.SubstractArticles(haiducelFeed, supplierFeed)
-    
-    print('    Articole ce nu mai exista in feed: ' + str(removedArticles.ArticlesCount()))
-    outFile = PathBuilder.getOutputPath('articole de sters', supplierFeed.code)
-    export.ExportArticlesForDeletion(removedArticles,
+    articlesToDelete = copy.deepcopy(shopData)
+    articlesToDelete.RemoveArticles(supplier)
+       
+    print('    Articole ce nu mai exista in feed: ' + str(articlesToDelete.ArticlesCount()))
+    outFile = PathBuilder.getOutputPath('articole de sters', supplier.code)
+    export.ExportArticlesForDeletion(articlesToDelete,
                                      outFile)
-    return removedArticles
-
-
-def ProcessNewArticles (haiducelFeed, supplierFeed):
     
-    newArticles = Operations.SubstractArticles(supplierFeed, haiducelFeed)
+
+
+def ProcessNewArticles (shopData, supplier):
+    
+    newArticles = copy.deepcopy(supplier)
+    newArticles.RemoveArticles(shopData)
     newArticles.RemoveInactiveArticles()
 
     print('    Articole noi in feed: ' +  str(newArticles.ArticlesCount()))
-    outFile = PathBuilder.getOutputPath('articole noi', supplierFeed.code)
+    outFile = PathBuilder.getOutputPath('articole noi', supplier.code)
     export.ExportAllData(newArticles,  outFile)
     return newArticles
     
