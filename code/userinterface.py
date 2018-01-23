@@ -1,6 +1,5 @@
 
 class UserInterface(object):
-    """User interface functionality"""
     
     TITLE_LENGTH = 79
     FILL_CHARACTER = '-'
@@ -14,9 +13,8 @@ class UserInterface(object):
         print(separator + '\n')
         print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' ')) 
         print(separator)
-        print("V 5.1, 06.01.2018\n")
+        print("V 6.0, 24.01.2018\n")
     
-
     def Title(self, title):
         
         titleCountStr = '(' + str(self.titleCounter) + ')'
@@ -39,11 +37,7 @@ class UserInterface(object):
     def HorizontalLine(self):
         print (self.HORIZONTAL_LINE)
     
-
     def AskYesOrNo(self, question):
-        '''
-        Displays the question and waits for a yes or no answer (y/n).
-        '''
         userInput=""
         print('')
         while (userInput!="da" and userInput!="nu"):

@@ -1,13 +1,6 @@
-'''
-Created on 26.12.2015
-
-@author: Adrian Mos
-'''
-# from bs4 import BeautifulSoup, NavigableString
 import bleach
 import re
-
-    
+   
 class DescriptionProcessor(object):
     '''
     Cleans the article descriptions to a format handled well by the on-line platform.
@@ -159,10 +152,5 @@ class DescriptionProcessor(object):
         zeroOrMoreSpaceChars = r" *"
         findPattern = r"<p>" + zeroOrMoreSpaceChars + r"</p>"
         return re.sub(findPattern, "", inData)
-        
-       
-    def __init__(self, params):
-        '''
-        Constructor
-        '''
+    
         

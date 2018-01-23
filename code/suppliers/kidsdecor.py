@@ -25,8 +25,8 @@ class ArticlesKidsDecor(Articles):
          5 Descriere  | 6 Link | 7 Imagine | 8 Pret | 9 Moneda  | 10  Empty | 11 Disponibilitate
          '''
 
-         print ("    Fisier de import: " + self.paths.feedFileNamePath)
-         with open(self.paths.feedFileNamePath, 'rt') as csvfile:
+         print ("    Fisier de import: " + self.paths.feedFile)
+         with open(self.paths.feedFile, 'rt') as csvfile:
              reader = csv.reader(csvfile, delimiter='|')
              
              counter=0

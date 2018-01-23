@@ -22,15 +22,15 @@ class ArticlesHaiducel(Articles):
          '''
          Import articles from csv file, oscommerce easypopulate format
          '''
-         print ("    Fisier de import: " + self.paths.feedFileNamePath)
+         print ("    Fisier de import: " + self.paths.feedFile)
          
-         if (not os.path.isfile(self.paths.feedFileNamePath)):
+         if (not os.path.isfile(self.paths.feedFile)):
              logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' 
-                            + self.paths.feedFileNamePath)
+                            + self.paths.feedFile)
              print("\nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
              sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
           
-         with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
+         with open(self.paths.feedFile, 'rt', encoding="latin1") as csvfile:
              
              reader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
                           

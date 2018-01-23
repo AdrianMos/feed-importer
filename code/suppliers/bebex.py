@@ -29,9 +29,9 @@ class ArticlesBebex(Articles):
         23 material, 24 culoare, 25 greutate, 26 garantie, 27 disponibilitate
          '''           
          print("*** Import articole ...")     
-         print ("    Fisier de import: " + self.paths.feedFileNamePath)
+         print ("    Fisier de import: " + self.paths.feedFile)
          
-         with open(self.paths.feedFileNamePath, 'rt', encoding="latin1") as csvfile:
+         with open(self.paths.feedFile, 'rt', encoding="latin1") as csvfile:
              reader = csv.reader(csvfile, delimiter=',', quotechar='"')
              counter=0
              for row in reader:

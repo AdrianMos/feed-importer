@@ -19,9 +19,9 @@ class ArticlesBabyShops(Articles):
         '''
         Import articles from csv file
         '''    
-        print ("    Fisier de import: " + self.paths.feedFileNamePath)
+        print ("    Fisier de import: " + self.paths.feedFile)
         
-        with open(self.paths.feedFileNamePath, "rt") as csvfile:
+        with open(self.paths.feedFile, "rt") as csvfile:
              reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
                       
              for row in reader:     

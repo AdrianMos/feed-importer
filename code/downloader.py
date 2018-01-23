@@ -5,14 +5,11 @@ import sys
 
 class Downloader(object):
    
-
     def __init__(self, credentials, paths):
         self.credentials = credentials
         self.paths = paths
     
-    
     def DownloadFeed(self, savePath, downloadUrl):
-
         print("*** Descarcare feed " + savePath + "...")     
                
         isPasswordRequired = self.credentials.username != ""               
@@ -43,7 +40,6 @@ class Downloader(object):
         print("    Feed " + savePath + " descarcat.")        
     
     def DownloadAndSaveImage(self, imgUrl, imgSavePath1, imgSavePath2=""):
-                
         try:
             imgUrl = imgUrl.replace(" ", "%20")
             imgUrl = self.RepairBrokenUrl(imgUrl)
@@ -108,7 +104,6 @@ class Downloader(object):
         ''' Images urls are stored in articlesList.images and new image names in articlesList.imagesNew.
             On the first position of articlesList.imagesNew the small image name is stored. '''
         
-        print("\n*** Se descarca imaginile pentru " + str(articleList.__len__()) + " de articole")
         print("    Folder descarcare: " + self.paths.allImagesFolder)
         print("                       " + self.paths.mainImagesFolder + "\n")
         
@@ -139,7 +134,6 @@ class Downloader(object):
             
             sys.stdout.write("/")
             sys.stdout.flush()
-
         print("\n") 
     
     

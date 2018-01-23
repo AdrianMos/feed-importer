@@ -8,7 +8,6 @@ import os.path, sys, logging, copy
 from code.userinterface import UserInterface
 from code.factory import Factory
 from code.export import Export
-from code.pathbuilder import PathBuilder
 from code.messages import *
 from code.menu import Menu
 from code.suppliers.articles import *
@@ -31,12 +30,8 @@ def main():
         sys.exit('..bye bye')
     try:
                 
-        InitLogFile(supplier.code)
+        InitLogFile(supplier)
         
-        
-        #print('  Procesare date de tipul ' +
-        #      supplier.__class__.__name__ + '.')
-
                 
         if user.AskYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':
             supplier.DownloadFeed()       
@@ -44,10 +39,10 @@ def main():
         
         user.Title(' IMPORT DATE FEED ')
         print('\n    Feed de la distributor: ' + supplier.code)
-        supplier.Import()
-        #errors = supplier.Import()
-        #if errors > 0:
-        #    print(MSG_FEED_ERRORS + str(errors))
+        #supplier.Import()
+        numErrors = supplier.Import()
+        if numErrors > 0:
+            print(MSG_FEED_ERRORS + str(errors))
         
         supplier.ConvertToOurFormat()
         print('    Articole importate: ' + str(supplier.ArticlesCount()) + '. ')
@@ -62,8 +57,7 @@ def main():
         
         
         user.Title(' SALVARE FEED FORMAT STANDARD ')
-        filename = PathBuilder.getOutputPath('Onlineshop', supplier.code)
-        export.ExportDataForOnlineshop(supplier, filename)
+        export.ExportDataForOnlineshop(supplier, supplier.paths.getSupplierFeedExportFile())
         user.HorizontalLine()
         
         
@@ -96,7 +90,9 @@ def main():
         
         
         user.Title(' DESCARCARE IMAGINI NOI ')
-        if user.AskYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
+        if user.AskYesOrNo('Descarc imaginile pentru '
+                           + str(newArticles.ArticlesCount())
+                           + ' articole noi?') == 'da':
             newArticles.DownloadImages();  
         user.HorizontalLine()
             
@@ -118,13 +114,10 @@ def ProcessUpdatedArticles (shopData, supplier):
 
     messagesList = supplierCopy.GetComparisonHumanReadableMessages(reference=shopData)
 
-            
     print('    Articole actualizate: '+ str(supplierCopy.ArticlesCount())) 
-    outFile = PathBuilder.getOutputPath('articole existente cu pret sau status modificat',
-                                        supplierCopy.code)
     export.ExportPriceAndAvailabilityAndMessages(supplierCopy, 
                                                  messagesList, 
-                                                 outFile)
+                                                 supplier.paths.getUpdatedArticlesFile())
     
     
 def ProcessArticlesForDeletion (shopData, supplier):
@@ -133,9 +126,8 @@ def ProcessArticlesForDeletion (shopData, supplier):
     articlesToDelete.RemoveArticles(supplier)
        
     print('    Articole ce nu mai exista in feed: ' + str(articlesToDelete.ArticlesCount()))
-    outFile = PathBuilder.getOutputPath('articole de sters', supplier.code)
     export.ExportArticlesForDeletion(articlesToDelete,
-                                     outFile)
+                                     supplier.paths.getDeletedArticlesFile())
     
 
 
@@ -146,13 +138,11 @@ def ProcessNewArticles (shopData, supplier):
     newArticles.RemoveInactiveArticles()
 
     print('    Articole noi in feed: ' +  str(newArticles.ArticlesCount()))
-    outFile = PathBuilder.getOutputPath('articole noi', supplier.code)
-    export.ExportAllData(newArticles,  outFile)
+    export.ExportAllData(newArticles,  supplier.paths.getNewArticlesFile())
     return newArticles
     
-def InitLogFile(code):
-    filename = PathBuilder.getLogPath(code)
-    logging.basicConfig(filename = filename,
+def InitLogFile(supplier): 
+    logging.basicConfig(filename = supplier.paths.getLogFile(),
                         level = logging.INFO, 
                         filemode = 'w',
                         format ='%(asctime)s     %(message)s')

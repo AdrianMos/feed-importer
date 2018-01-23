@@ -1,38 +1,35 @@
-import sys
-import os.path
+import sys, os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from code.article import Article
-from code.pathbuilder import PathBuilder
-from code.descriptionprocessor import DescriptionProcessor
+
 
 import codecs
 import csv
 import os
 import collections
-#import urllib.request
 import pdb
 import logging
 from _ast import Try
 from bs4 import BeautifulSoup, NavigableString
-import bleach
-import re
-#import requests
+#import bleach
+#import re
 import configparser
 
 
 class Articles(object):
 
-    def __init__(self, code, paths, parameters, downloader):
+    def __init__(self, code, paths, parameters, downloader, descriptionProcessor):
 
         self.articleList = []
         self.code = self.getSupplierCode()
         self.paths = paths
         self.parameters = parameters
         self.downloader = downloader
+        self.descriptionProcessor = descriptionProcessor
         
         # Check the folders availability for this client. Create the folder structure if necessary.
-        supplierFolder = PathBuilder.getOutputFolderPath(code)
+        supplierFolder = paths.getOutputFolderPath()
         
         if not os.path.isdir(supplierFolder):
             print("Folderul pentru acest distribuitor nu exista, se va crea automat: " + supplierFolder)
@@ -51,9 +48,9 @@ class Articles(object):
     
     
     def DownloadFeed(self):
-        self.downloader.DownloadFeed(self.paths.feedFileNamePath,
+        self.downloader.DownloadFeed(self.paths.feedFile,
                                      self.parameters.downloadUrl)         
-            
+             
     def ArticlesCount(self):
         return self.articleList.__len__()
     
@@ -82,7 +79,7 @@ class Articles(object):
        
     
     def Import(self):
-         raise NotImplementedError("Must implement import functionality")    
+         raise NotImplementedError("Must implement Import()")    
     
          
     def Add(self, id, title, price, available, category, supplier):
@@ -92,7 +89,9 @@ class Articles(object):
         else:
             activeStatus = "Inactive"
         
-        self.articleList.append( Article(id = id, title = title, price=price, available=activeStatus, category=category, supplier=supplier)) 
+        self.articleList.append( Article(id = id, title = title, price=price, 
+                                          available=activeStatus, category=category, 
+                                          supplier=supplier)) 
        
     def Add1(self, article):
         self.articleList.append(article)
@@ -200,7 +199,7 @@ class Articles(object):
         '''
         # Remove the product name from description
         description = article.description.replace(article.title, "")
-        return DescriptionProcessor.CleanDescription(description)    
+        return self.descriptionProcessor.CleanDescription(description)    
         
     def ConvertToOurFormat(self):
         '''
@@ -259,6 +258,15 @@ class Articles(object):
         #for art1 in self.articleList:
         #    print(" " + str(art1.id))
 
+
+    def RemoveArticles(self, articlesToRemove):
+        #traverse backwards: if we remove an element, the lower indexes are not affected 
+        for i, art1 in reversed(list(enumerate(self.articleList))):
+            for art2 in articlesToRemove.articleList:    
+                if art1.IsSameArticle(art2):
+                    self.articleList.pop(i)
+                    break
+
     def RemoveArticlesWithNoUpdatesComparedToReference(self, reference):
         #traverse backwards: if we remove an element, the lower indexes are not affected 
         for i, art1 in reversed(list(enumerate(self.articleList))):
@@ -269,14 +277,6 @@ class Articles(object):
                     if hasNoUpdates:
                         self.articleList.pop(i)
                     break
-
-    def RemoveArticles(self, articlesToRemove):
-        #traverse backwards: if we remove an element, the lower indexes are not affected 
-        for i, art1 in reversed(list(enumerate(self.articleList))):
-            for art2 in articlesToRemove.articleList:    
-                if art1.IsSameArticle(art2):
-                    self.articleList.pop(i)
-                    break    
 
     def GetComparisonHumanReadableMessages(self, reference):
         messages=collections.OrderedDict()

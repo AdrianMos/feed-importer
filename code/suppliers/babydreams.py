@@ -23,7 +23,7 @@ class ArticlesBabyDreams(Articles):
         feedData = response.read().decode("cp1252").encode('unicode_escape')
         feedData = feedData.decode('unicode_escape').encode('ascii', 'ignore')       
               
-        with open(self.paths.feedFileNamePath, 'wb') as textfile:
+        with open(self.paths.feedFile, 'wb') as textfile:
             textfile.write(feedData)
             textfile.close()
             
@@ -35,8 +35,8 @@ class ArticlesBabyDreams(Articles):
         '''  
         numErrors = 0
           
-        print ("    Fisier de import: " + self.paths.feedFileNamePath)
-        with open(self.paths.feedFileNamePath, 'rt') as csvfile:
+        print ("    Fisier de import: " + self.paths.feedFile)
+        with open(self.paths.feedFile, 'rt') as csvfile:
             #reader = csv.reader(csvfile, delimiter='|')
             reader = csv.DictReader(csvfile, delimiter='|', quotechar='"')
              

@@ -21,9 +21,9 @@ class ArticlesNancy(Articles):
          Import articles from csv file
          '''
          print("*** Import articole ...")     
-         print ("    Fisier de import: " + self.paths.feedFileNamePath)
+         print ("    Fisier de import: " + self.paths.feedFile)
 
-         with open(self.paths.feedFileNamePath, 'rt') as csvfile:
+         with open(self.paths.feedFile, 'rt') as csvfile:
              reader = csv.reader(csvfile, delimiter='|')
              
              for row in reader:
