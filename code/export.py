@@ -8,11 +8,7 @@ import csv
 import collections
 
 
-class Export(object):
-    '''
-    classdocs
-    '''
-        
+class Export(object):        
     header = collections.OrderedDict()
     header.update( [("id" , "v_products_model"),
                    ("title2" , "v_products_name_2"),
@@ -39,9 +35,6 @@ class Export(object):
        
        
     def __init__(self):
-        '''
-        Constructor
-        '''
         pass
         
     def ExportAllData(self, articles, filename):
@@ -70,7 +63,6 @@ class Export(object):
          
 
     def ExportDataForOnlineshop(self, articles, filename):
-            
         with open(filename, 'wt', encoding="utf-8") as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', 
                                 quoting=csv.QUOTE_NONNUMERIC, 
@@ -92,7 +84,6 @@ class Export(object):
         print ("    Fisier salvat:\n      \t" + filename)
     
     def ExportPriceAndAvailability(self, articles, filename):
-        
         with open(filename, 'wt') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"', 
                                 quoting=csv.QUOTE_MINIMAL,
@@ -105,7 +96,6 @@ class Export(object):
                 writer.writerow(row)   
       
     def ExportArticlesForDeletion(self, articles, filename):
-        
         with open(filename, 'wt') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"',
                                 quoting=csv.QUOTE_MINIMAL,
@@ -124,7 +114,6 @@ class Export(object):
                                               articles, 
                                               messages,
                                               filename):
-        
         with open(filename, 'wt') as csvfile:
             writer = csv.writer(csvfile, delimiter=',', quotechar='"',
                                 quoting=csv.QUOTE_MINIMAL,

@@ -224,10 +224,11 @@ class Articles(object):
         return mainImageName[:mainImageName.rfind(".")] + "_s" + extension
 
     
-    def FilterBySupplier(self, supplier):
+    def FilterBySupplier(self, supplierId):
+        print('    Filtru distribuitor: ' + supplierId)
         #traverse backwards: if we remove an element, the lower indexes are not affected  
         for article in reversed(self.articleList):
-            if article.supplier != supplier:
+            if article.supplier != supplierId:
                 self.articleList.remove(article)
     
     def RemoveInactiveArticles(self):

@@ -56,7 +56,6 @@ class Factory(object):
     @staticmethod
     def CreateFeedObjectForShop():
         code = Factory.GetSupplierCode("ArticlesHaiducel")
-        print("code " + str(code))
         paths = PathBuilder(code)
         newObject = ArticlesHaiducel(code, paths, None, None, None);
         
