@@ -1,172 +1,168 @@
-'''
-Created on 26.04.2014
-
-@author: Adrian Raul Mos
-'''
-import os.path
-import sys
-import logging
+import os.path, sys, logging, copy
 
 from code.userinterface import UserInterface
 from code.factory import Factory
 from code.export import Export
-from code.operations import Operations
-from code.pathbuilder import PathBuilder
 from code.messages import *
+from code.menu import Menu
+from code.suppliers.articles import *
+
 
 export = Export()
 
+ 
 def main():
-    factory = Factory()
-    user = UserInterface()
+    ui = UserInterface()
+    ui.DisplayHeader()
 
-    user.DisplayHeader()
-    try:
-        
-        user.DisplayOptions()
-        userInput = user.AskInput('Introduceti numarul optiunii: >> ')
-        if userInput == '1':
-            print('Program terminat.')
-            sys.exit('Program terminat.')
-        
-        
-        code = user.GetCodeForOption(userInput)
-        if code is None:
-            print('Optiune invalida. Program terminat.')
-            sys.exit('Optiune invalida. Program terminat.')
-        
-        feed = factory.CreateSupplierFeedObject(code)
-        if feed is None:
-            print('Optiune invalida. Program terminat.')
-            sys.exit('Optiune invalida. Program terminat.')
-        
-        InitLogFile(feed.code)
-        
-        
-        print('  Procesare articole de tipul ' +
-              feed.__class__.__name__ + '.')
+    menu = builMenu()
+    #the menu callback creates the supplier feed object
+    #according to the user selection
+    supplier = menu.openMenu()
 
-                
-        if user.AskYesOrNo('Descarc date noi pentru acest furnizor?') == 'da':
-            feed.DownloadFeed(feed.credentials)
+    if not isinstance(supplier, Articles):
+        print("Error: the menu callback doesn't create an Articles instance")
+        sys.exit(0)
         
-        
-        user.Title(' IMPORT DATE FEED ')
-        print('\n    Feed de la distributor: ' + feed.code)
-        errors = feed.Import()
-        if errors > 0:
-            print(MSG_FEED_ERRORS + str(errors))
-        
-        feed.ConvertToOurFormat()
-        print('    Articole importate: ' + str(feed.ArticlesCount()) + '. ')
+    try:       
+        LogInit(supplier)
 
-       
-        if feed.ArticlesCount() < 50:
-            logging.error(MSG_WARNING_LESS_50_ARTICLES)
+        ui.Title(TITLE_IMPORT_SUPPLIER_DATA)
+        GetSupplierData(ui, supplier)
+        ui.HorizontalLine()
             
-            if user.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES +
-                               ' Continuati?') == 'nu':
-                sys.exit('Ati renuntat la procesare.')
-        user.HorizontalLine()
+        
+        ui.Title(TITLE_EXPORT_STANDARD_FORMAT)
+        export.ExportDataForOnlineshop(supplier, supplier.paths.getSupplierFeedExportFile())
+        ui.HorizontalLine()
         
         
-        user.Title(' SALVARE FEED FORMAT STANDARD ')
-        filename = PathBuilder.getOutputPath('Onlineshop', feed.code)
-        export.ExportDataForOnlineshop(feed, filename)
-        user.HorizontalLine()
+        ui.Title(TITLE_REMOVE_IRELEVANT_ARTICLES)
+        supplier.RemoveCrapArticles()
+        print('    Numar articole: ' + str(supplier.ArticlesCount()))
+        ui.HorizontalLine()
         
         
-        user.Title(' CURATARE FEED ')
-        feed.RemoveCrapArticles()
-        print('    Articole importate, dupa eliminare: ' + 
-               str(feed.ArticlesCount()))
-        user.HorizontalLine()
-        
-        
-        user.Title(' IMPORT DATE HAIDUCEL ')
-        print('    Filtru distribuitor: ' + feed.code)
-        haiducelAllArticles = factory.CreateHaiducelFeedObject()
-        haiducelAllArticles.Import()
-        haiducelFiltered = haiducelAllArticles.FilterBySupplier(feed.code)
-        print('    Articole importate: ' + str(haiducelFiltered.ArticlesCount()))
-        user.HorizontalLine()
-        
-        user.Title(' COMPARARI ')
-        print('\n\nARTICOLE MODIFICATE')
-        ProcessUpdatedArticles(haiducelFiltered, feed)
-        
-        print('\n\nARTICOLE NOI')
-        newArticles = ProcessNewArticles(haiducelFiltered, feed)
+        ui.Title(TITLE_IMPORT_SHOP_DATA)      
+        shopData = Factory.CreateFeedObjectForShop()
+        shopData.Import()
+        shopData.FilterBySupplier(supplier.code)
+        print('    Numar articole: ' + str(shopData.ArticlesCount()))
+        ui.HorizontalLine()
 
-        print('\n\nARTICOLE STERSE')
-        ProcessArticlesForDeletion(haiducelFiltered, feed)
-        user.HorizontalLine()
         
+        ui.Title(TITLE_COMPARING_SHOP_AND_SUPPLIER_DATA)
+        ProcessUpdatedArticles(shopData, supplier)
+        newArticles = ProcessNewArticles(shopData, supplier)
+        ProcessDeletedArticles(shopData, supplier)
+        ui.HorizontalLine()
+
         
-        user.Title(' DESCARCARE IMAGINI NOI ')
-        if user.AskYesOrNo('Descarc imaginile pentru articolele noi?') == 'da':
-            newArticles.DownloadImages(feed.credentials);  
-        user.HorizontalLine()
-            
-            
+        DownloadImagesIfUserWants(ui, newArticles)
+          
     except Exception as ex:
         print('\n\n Eroare: ' + repr(ex) + '\n')
         logging.error('main: ' + repr(ex))
       
-   
-    user.AskInput('\nApasati enter pentru iesire. >> ')
-    print('\n*** Program terminat ***')
+    ui.AskInput(MSG_PRESS_ENTER_TO_QUIT)
+
+def GetSupplierData(ui, supplier):
+    if ui.AskYesOrNo(QUESTION_DOWNLOAD_FEED) == YES:
+        supplier.DownloadFeed()       
+        
+    print('\n    Cod: ' + supplier.code)
+    numErrors = supplier.Import()
+    if numErrors > 0:
+        print(MSG_FEED_ERRORS + str(numErrors))
+        
+    supplier.ConvertToOurFormat()
+    print('    Numar articole: ' + str(supplier.ArticlesCount()))
+    
+    AskUserConfirmationIfPossibleErrorIsDetected(ui, supplier)
+
+def AskUserConfirmationIfPossibleErrorIsDetected(ui, supplier):
+    if supplier.ArticlesCount() < 50:            
+        if ui.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES + ' Continuati?') == NO:
+            print('Ati renuntat la procesare.')
+            sys.exit(0)
+
+def DownloadImagesIfUserWants(ui, articles):
+    ui.Title(TITLE_DOWNLOAD_NEW_IMAGES)
+    if ui.AskYesOrNo('Descarc imaginile pentru '
+                           + str(articles.ArticlesCount())
+                           + ' articole noi?') == YES:
+            articles.DownloadImages();  
+    ui.HorizontalLine()
+  
+def ProcessUpdatedArticles (shopData, supplier):
+    print('\n\nARTICOLE MODIFICATE')
+    supplierCopy = copy.deepcopy(supplier)
+    supplierCopy.IntersectWith(shopData)
+    supplierCopy.RemoveArticlesWithNoUpdatesComparedToReference(reference=shopData)
+
+    messagesList = supplierCopy.GetComparisonHumanReadableMessages(reference=shopData)
+
+    print('    Numar articole: '+ str(supplierCopy.ArticlesCount())) 
+    export.ExportPriceAndAvailabilityAndMessages(supplierCopy, 
+                                                 messagesList, 
+                                                 supplier.paths.getUpdatedArticlesFile())
+    
+    
+def ProcessDeletedArticles (shopData, supplier):
+    print('\n\nARTICOLE STERSE')
+    articlesToDelete = copy.deepcopy(shopData)
+    articlesToDelete.RemoveArticles(supplier)
+       
+    print('    Numar articole: ' + str(articlesToDelete.ArticlesCount()))
+    export.ExportArticlesForDeletion(articlesToDelete,
+                                     supplier.paths.getDeletedArticlesFile())
+    
 
 
-def ProcessUpdatedArticles (haiducelFeed, supplierFeed):
-    
-    updatedArticles, updateMessages = Operations.ExtractUpdatedArticles(
-                                                     haiducelFeed,
-                                                     supplierFeed)
-    # Set the saving paths & code for the updated articles identical to 
-    # the supplier's paths
-    # The updated articles belong to the supplier.
-    updatedArticles.paths = supplierFeed.paths    
-    print('    Articole actualizate: '+ str(updateMessages.__len__())) 
+def ProcessNewArticles (shopData, supplier):
+    print('\n\nARTICOLE NOI')
+    newArticles = copy.deepcopy(supplier)
+    newArticles.RemoveArticles(shopData)
+    newArticles.RemoveInactiveArticles()
 
-    outFile = PathBuilder.getOutputPath('articole existente cu' + 
-                                        ' pret sau status modificat',
-                                        supplierFeed.code)
-    export.ExportPriceAndAvailabilityAndMessages(updatedArticles, 
-                                                 updateMessages, 
-                                                 outFile)
-    return updatedArticles
-
-    
-def ProcessArticlesForDeletion (haiducelFeed, supplierFeed):
-    
-    removedArticles = Operations.SubstractArticles(haiducelFeed, supplierFeed)
-    
-    print('    Articole ce nu mai exista in feed: ' + 
-          str(removedArticles.ArticlesCount()))
-    outFile = PathBuilder.getOutputPath('articole de sters', supplierFeed.code)
-    export.ExportArticlesForDeletion(
-                removedArticles,
-                outFile)
-    return removedArticles
-
-    
-def ProcessNewArticles (haiducelFeed, supplierFeed):
-    
-    newArticles = Operations.SubstractArticles(supplierFeed, haiducelFeed)
-    newArticles = Operations.RemoveUnavailableArticles(newArticles)
-    newArticles.paths = supplierFeed.paths
-    print('    Articole noi in feed: ' +  str(newArticles.ArticlesCount()))
-    outFile = PathBuilder.getOutputPath('articole noi', supplierFeed.code)
-    export.ExportAllData(newArticles,  outFile)
+    print('    Numar articole: ' +  str(newArticles.ArticlesCount()))
+    export.ExportAllData(newArticles,  supplier.paths.getNewArticlesFile())
     return newArticles
     
-def InitLogFile(code):
-    filename = PathBuilder.getLogPath(code)
-    logging.basicConfig(filename = filename,
+def LogInit(supplier): 
+    logging.basicConfig(filename = supplier.paths.getLogFile(),
                         level = logging.INFO, 
                         filemode = 'w',
                         format ='%(asctime)s     %(message)s')
 
+def exitApp(data):
+    print("... bye")
+    sys.exit(0)
+
+
+def builMenu():
+    menu = Menu(title = "Optiuni disponibile:",
+                       userMessage = 'Alegeti:')
+    
+    menu.addMenuItem(name="Iesire",
+                     callback=exitApp,
+                     arguments="")
+
+    #format: display_text, invoked_supplier_class
+    items = [["Actualizare Nancy (NAN) ok",          "ArticlesNancy"],
+                ["Actualizare BabyDreams (HDRE)",     "ArticlesBabyDreams"],
+                ["Actualizare Bebex (BEB)",               "ArticlesBebex"],
+                ["Actualizare BebeBrands (HBBA) ok",  "ArticlesBebeBrands"],
+                ["Actualizare BabyShops (HMER)",      "ArticlesBabyShops"],
+                ["Actualizare KidsDecor (HDEC)",        "ArticlesKidsDecor"],
+                ["Actualizare Hubners (HHUB) ok",      "ArticlesHubners"]]
+
+    for item in items:
+        menu.addMenuItem(name = item[0],
+                         callback = Factory.CreateSupplierFeedObject,
+                         arguments = item[1])
+        
+    return menu
+                        
 if __name__ == '__main__':
     main()

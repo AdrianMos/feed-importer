@@ -1,6 +1,5 @@
 
 class UserInterface(object):
-    """User interface functionality"""
     
     TITLE_LENGTH = 79
     FILL_CHARACTER = '-'
@@ -14,42 +13,7 @@ class UserInterface(object):
         print(separator + '\n')
         print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' ')) 
         print(separator)
-        print("V 5.1, 06.01.2018\n")
-    
-    def DisplayOptions(self):
-        
-        print("Optiuni disponibile:")
-        print("  1. Iesire\n"
-              "  2. Actualizare Nancy (NAN) ok\n"
-              "  3. Actualizare BabyDreams (HDRE)\n" 
-              "  4. Actualizare Bebex (BEB)\n"
-              "  5. Actualizare BebeBrands (HBBA) ok\n"
-              "  6. Actualizare BabyShops (HMER)\n"
-              "  7. Actualizare KidsDecor (HDEC)\n"  
-              "  8. Actualizare Hubners (HHUB) ok\n"
-              )
-
-    def GetCodeForOption(self, option):
-                
-        if option=="2":
-            code = "NAN"
-        elif option=="3":
-            code = "HDRE"
-        elif option=="4":
-            code = "BEB"
-        elif option=="5":
-            code = "HBBA"
-        elif option=="6":
-            code = "HMER"
-        elif option=="7":
-            code = "HDEC"
-        elif option=="8":
-            code = "HHUB"
-        else:
-            code =  None
-            
-        return code
-    
+        print("V 6.0, 24.01.2018\n")
     
     def Title(self, title):
         
@@ -73,11 +37,7 @@ class UserInterface(object):
     def HorizontalLine(self):
         print (self.HORIZONTAL_LINE)
     
-
     def AskYesOrNo(self, question):
-        '''
-        Displays the question and waits for a yes or no answer (y/n).
-        '''
         userInput=""
         print('')
         while (userInput!="da" and userInput!="nu"):

@@ -10,14 +10,18 @@ from article import Article
 
 
 class ArticlesHubners(Articles):
-    
+
+    @staticmethod
+    def getSupplierCode():
+        return "HHUB" 
+        
     def Import(self):
         '''
         Import articles from csv file
         '''    
-        print ("    Fisier de import: " + self.paths.feedFileNamePath)
+        print ("    Fisier de import: " + self.paths.feedFile)
         
-        with open(self.paths.feedFileNamePath, "rt") as csvfile:
+        with open(self.paths.feedFile, "rt") as csvfile:
             
             reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
              

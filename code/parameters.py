@@ -7,14 +7,8 @@ import os.path
 import configparser
 
 class Parameters(object):
-    '''
-    classdocs
-    '''
 
-    def __init__(self):
-        '''
-        Constructor
-        '''       
+    def __init__(self):   
         self.downloadUrl = ''   
         self.delimiter = '|'
         self.quotechar = '"' 
@@ -23,9 +17,8 @@ class Parameters(object):
      
     def LoadFromFile(self, file):
         ''' 
-        Reads configuration parameters from the configuration file
+        Reads configuration parameters from a configuration file
         '''
-        
         if not os.path.isfile(file):
             print('ATENTIE: Fisierul de configurare nu exista: ' + file)
         else:        
@@ -40,7 +33,6 @@ class Parameters(object):
         
         
     def ReadMapFromFile(self, file):
-        
         map = {}
         
         if not os.path.isfile(file):

@@ -29,25 +29,7 @@ class Article(object):
         if self.id == articleToCompare.id:
             return True
         return False
-    
-    def ComparePriceAndAvailability(self, articleToCompare):
-        '''
-        Compares the price and availability of the articles. If they are different False is returned and a message which
-        describes the diferences.
-        :param articleToCompare:
-        '''
-        msg = ""
-        isDifferent = False
-        if self.price!=articleToCompare.price:
-            msg = msg + " pret " + str(self.price) + "=/=" + str(articleToCompare.price) 
-            isDifferent = True
-        
-        if self.available!=articleToCompare.available:
-            msg = msg + " stoc " + str(self.available) + "=/=" + str(articleToCompare.available)
-            isDifferent = True
-            
-        return isDifferent, msg
-                
+               
                 
     def __str__(self):
         '''

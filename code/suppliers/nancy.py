@@ -12,14 +12,18 @@ from article import Article
 
 class ArticlesNancy(Articles):
     
+    @staticmethod
+    def getSupplierCode():
+        return "NAN" 
+        
     def Import(self):
          '''
          Import articles from csv file
          '''
          print("*** Import articole ...")     
-         print ("    Fisier de import: " + self.paths.feedFileNamePath)
+         print ("    Fisier de import: " + self.paths.feedFile)
 
-         with open(self.paths.feedFileNamePath, 'rt') as csvfile:
+         with open(self.paths.feedFile, 'rt') as csvfile:
              reader = csv.reader(csvfile, delimiter='|')
              
              for row in reader:
@@ -32,7 +36,8 @@ class ArticlesNancy(Articles):
                                                   initialCategory = row[7],
                                                   category = row[7],
                                                   supplier = "NAN",
-                                                  imagesUrl = [row[8], row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],row[17],row[18], row[19]]))
+                                                  imagesUrl = [row[8], row[9], row[10], row[11], row[12], row[13],
+                                                               row[14], row[15], row[16],row[17],row[18], row[19]]))
          print("    Import terminat.")
          return -1
 
@@ -42,7 +47,7 @@ class ArticlesNancy(Articles):
         Computes the in-stock / out-of-stock status to our format (Active/Inactive)
         :param article: article used for computing.
         '''
-        activeVariants = ["produs pe stoc", "comanda speciala"]
+        activeVariants = ["produs pe stoc", "comanda speciala", "produs limitat"]
         if article.available.lower() in activeVariants:
             return "Active"
         else:
@@ -54,7 +59,7 @@ class ArticlesNancy(Articles):
         '''
         Converts the image url into an internal file naming.
         e.g.
-          url: http://www.importatorarticolecopii.ro/prodpics/p_105156c46838594_set lenjerie pat copii pek safari verde 1 my kids baby shop www.mykids.jpg
+          url: http://www.importatorarticolecopii.ro/prodpics/p_105156c46838594_set lenjerie pat www.mykids.jpg
           returns: "p_105156c46838594.jpg", on success
                    "noimage.jpg", on failure
                    "" for empty url
