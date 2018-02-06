@@ -16,8 +16,8 @@ class ArticlesBebeBrands(Articles):
     def getSupplierCode():
         return "HBBA"    
    
-    def __init__(self, code, paths, credentials, parameters):
-        super().__init__(code, paths, credentials, parameters)
+    def __init__(self, code, paths, parameters, downloader, descriptionProcessor):
+        super().__init__(code, paths, parameters, downloader, descriptionProcessor)
                 
         config = configparser.ConfigParser()
         config.read(self.paths.configFile)
