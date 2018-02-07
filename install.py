@@ -26,11 +26,16 @@ def print_repository(repo):
     print('Commit date:'
           + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(repo.head.commit.committed_date)))
 
-def download_latest_repository(gitRepository, storeToPath):
-    # delete directory if exists, gitpython can only clone in an empty folder
-    if os.path.exists(storeToPath):
-        shutil.rmtree(storeToPath, onerror=remove_readonly)
-    repo = Repo.clone_from(gitRepository, storeToPath, branch='master')
+def deleteFolder(path):
+     if os.path.exists(path):
+        shutil.rmtree(path, onerror=remove_readonly)
+
+          
+#def download_latest_repository(gitRepository, storeToPath):
+#     delete directory if exists, gitpython can only clone in an empty folder
+#    if os.path.exists(storeToPath):
+#        shutil.rmtree(storeToPath, onerror=remove_readonly)
+#    repo = Repo.clone_from(gitRepository, storeToPath, branch='master')
     
 
 def isLocalRepositoryOutdated(localRepo, remoteRepo):
@@ -41,31 +46,33 @@ MSG_CHECKING_SOFTWARE_UPDATES = "Verificam actualizarile de software"
 
 try:
 
-    repoPath = os.getcwd()
-    oneFolderUp = os.path.dirname(os.getcwd())
-    tempRepoPath = os.path.join(oneFolderUp, 'temp-git-repo')
+    activeRepositoryPath = os.getcwd()
+    #oneFolderUp = os.path.dirname(os.getcwd())
+    githubRepositoryPath = os.path.join(activeRepositoryPath, 'upgrade', 'github-repo')
 
     
     #tempRepoPath = os.path.join(os.getcwd(), os.pardir, 'temp_repo')
-    print('temp repo path: ' + str(tempRepoPath))
+    print('github repo path: ' + str(githubRepositoryPath))
 
     print(MSG_CHECKING_SOFTWARE_UPDATES)
-    githubRepository = download_latest_repository(gitRepository = 'https://github.com/AdrianMos/feed-importer.git',
-                                                  storeToPath = tempRepoPath)
-    print_repository(githubRepository)
-   
     
-    localRepository = Repo(os.getcwd())
-    print_repository(localRepository)
+    deleteFolder(githubRepositoryPath)
+    
+    githubRepository = Repo.clone_from(gitRepository = 'https://github.com/AdrianMos/feed-importer.git', 
+                                                            storeToPath = githubRepositoryPath, 
+                                                            branch='master')
+    
+    activeRepository = Repo(activeRepositoryPath)
+    print_repository(activeRepository)
 
 
-    if isLocalRepositoryOutdated(localRepository, githubRepository)
+    if isLocalRepositoryOutdated(activeRepository, githubRepository)
         print('\nExista o versiune mai noua de software')
         print('\nConfirmati instalarea?')
 
         # run the software migration batch script
         # the script installs the new software but keeps the old configurations
-        batchLocation = os.path.join(tempRepoPath, 'upgrade', 'migrate.bat')
+        batchLocation = os.path.join(githubRepositoryPath, 'upgrade', 'migrate.bat')
         #os.startfile(batchLocation)
         
     else:
