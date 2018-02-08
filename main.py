@@ -17,8 +17,8 @@ export = Export()
  
 def main():
     ui = UserInterface()
-    ui.DisplayHeader()
-
+    ui.MainTitle(' Actualizare date Haiducel ')
+    
     UpdateSoftware(ui)
 
     menu = builMenu()
@@ -73,18 +73,21 @@ def main():
     ui.AskInput(MSG_PRESS_ENTER_TO_QUIT)
 
 
-def UpdateSoftware(ui):
-    print('Actualizare software')
+def UpdateSoftware(ui):    
     updater = Updater(gitUrl='https://github.com/AdrianMos/feed-importer.git',
                       gitBranch='master',
                       softwarePath = os.getcwd())
 
+    print(updater.GetCurrentSoftwareVersion() + '\n')
+    print('Actualizare software')    
     try :
         updater.Download()
-        if updater.isUpdateAvailable():
+        if updater.IsUpdateRequired():
+            print(updater.GetSoftwareUpdateMessage())
             if ui.AskYesOrNo(QUESTION_UPDATE_SOFTWARE) == YES:
                 updater.Install()
-        print('\n\n')
+        else:
+            print('  -\n')
     except Exception as ex:
         print('\n\n Eroare UpdateSoftware(): ' + repr(ex) + '\n')
         logging.error('main: ' + repr(ex))

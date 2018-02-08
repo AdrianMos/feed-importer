@@ -19,7 +19,7 @@ NO = 'nu'
 QUESTION_DOWNLOAD_FEED = 'Descarc date noi pentru acest furnizor?'
 QUESTION_CONTINUE = ' Continuati?'
 QUESTION_DOWNLOAD_FEED
-QUESTION_UPDATE_SOFTWARE = 'Exista o versiune noua de software. Doriti actualizare?'
+QUESTION_UPDATE_SOFTWARE = '  Exista o versiune noua de software.\n  Doriti actualizare?'
 
 TITLE_IMPORT_SUPPLIER_DATA = ' IMPORT DATE FURNIZOR '
 TITLE_EXPORT_STANDARD_FORMAT = ' SALVARE DATE FURNIZOR IN FORMAT STANDARD '

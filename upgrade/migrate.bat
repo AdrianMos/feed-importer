@@ -1,5 +1,5 @@
 @ECHO OFF
-SET source=github-repo
+SET source=git-repo
 SET dest=..
 
 :: copy the configs\credentials from the active  repo to the temp location
@@ -16,4 +16,3 @@ ATTRIB -H ..\upgrade
 :: install the software  (stored in the upgrade folder)
 XCOPY /E /H /Y /R /i "%source%" "%dest%"
 
-::RMDIR /S /Q "%source%"

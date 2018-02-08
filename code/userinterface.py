@@ -1,3 +1,4 @@
+from code.messages import *
 
 class UserInterface(object):
     
@@ -7,24 +8,22 @@ class UserInterface(object):
     
     titleCounter = 1;
     
-    def DisplayHeader(self):
+    def MainTitle(self, title):
         
         separator = '\n' + '*' * self.TITLE_LENGTH
         print(separator + '\n')
-        print(' Actualizare date Haiducel '.center(self.TITLE_LENGTH ,' ')) 
+        print(title.center(self.TITLE_LENGTH ,' ')) 
         print(separator)
-        print("V 6.0, 24.01.2018\n")
+        
     
     def Title(self, title):
         
         titleCountStr = '(' + str(self.titleCounter) + ')'
         
         if len(title) <= self.TITLE_LENGTH - 2:
-            
             formatedTitle = title.upper().center(self.TITLE_LENGTH \
                                                  - len(titleCountStr),
                                                  self.FILL_CHARACTER)
-            
             print('\n' + titleCountStr + formatedTitle + '\n')
         else:
             print(self.HORIZONTAL_LINE +
@@ -40,8 +39,8 @@ class UserInterface(object):
     def AskYesOrNo(self, question):
         userInput=""
         print('')
-        while (userInput!="da" and userInput!="nu"):
-            userInput = input(question + ' da/nu: >> ').lower()
+        while (userInput!=YES and userInput!=NO):
+            userInput = input(question + ' ' + YES + '/' + NO + ': >> ').lower()
         return userInput
     
     def AskInput(self, question):
