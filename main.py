@@ -6,14 +6,20 @@ from code.export import Export
 from code.messages import *
 from code.menu import Menu
 from code.suppliers.articles import *
-
+from code.updater import Updater
 
 export = Export()
+
+
+
+
 
  
 def main():
     ui = UserInterface()
     ui.DisplayHeader()
+
+    UpdateSoftware(ui)
 
     menu = builMenu()
     #the menu callback creates the supplier feed object
@@ -66,6 +72,25 @@ def main():
       
     ui.AskInput(MSG_PRESS_ENTER_TO_QUIT)
 
+
+def UpdateSoftware(ui):
+    print('Actualizare software')
+    updater = Updater(gitUrl='https://github.com/AdrianMos/feed-importer.git',
+                      gitBranch='master',
+                      softwarePath = os.getcwd())
+
+    try :
+        updater.Download()
+        if updater.isUpdateAvailable():
+            if ui.AskYesOrNo(QUESTION_UPDATE_SOFTWARE) == YES:
+                updater.Install()
+        print('\n\n')
+    except Exception as ex:
+        print('\n\n Eroare UpdateSoftware(): ' + repr(ex) + '\n')
+        logging.error('main: ' + repr(ex))
+        sys.exit(0)
+
+
 def GetSupplierData(ui, supplier):
     if ui.AskYesOrNo(QUESTION_DOWNLOAD_FEED) == YES:
         supplier.DownloadFeed()       
@@ -82,7 +107,7 @@ def GetSupplierData(ui, supplier):
 
 def AskUserConfirmationIfPossibleErrorIsDetected(ui, supplier):
     if supplier.ArticlesCount() < 50:            
-        if ui.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES + ' Continuati?') == NO:
+        if ui.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES + QUESTION_CONTINUE) == NO:
             print('Ati renuntat la procesare.')
             sys.exit(0)
 
