@@ -10,14 +10,12 @@ from code.updater import Updater
 
 export = Export()
 
-
 def main():
-
     
     terminal = UserInterface()
-    terminal.MainTitle(' Actualizare date Haiducel ')
+    terminal.PrintTitle(TITLE_SOFTWARE)
     
-    UpdateSoftware(terminal)
+    TryUpdateSoftware(terminal)
 
     menu = buildMenu()
     #the menu callback creates the supplier feed object
@@ -25,41 +23,35 @@ def main():
     supplier = menu.openMenu()
 
     if not isinstance(supplier, Articles):
-        print("Error: the menu callback doesn't create an Articles instance")
-        sys.exit(0)
-        
+        print(ERROR_SUPPLIER_BAD_INSTANCE_TYPE)
+        sys.exit(0)   
     try:       
         LogInit(supplier)
 
-        terminal.Title(TITLE_IMPORT_SUPPLIER_DATA)
+        terminal.PrintSection(TITLE_IMPORT_SUPPLIER_DATA)
         GetSupplierData(terminal, supplier)
-        terminal.HorizontalLine()
-            
-        
-        terminal.Title(TITLE_EXPORT_STANDARD_FORMAT)
+           
+
+        terminal.PrintSection(TITLE_EXPORT_STANDARD_FORMAT)
         export.ExportDataForOnlineshop(supplier, supplier.paths.getSupplierFeedExportFile())
-        terminal.HorizontalLine()
         
         
-        terminal.Title(TITLE_REMOVE_IRELEVANT_ARTICLES)
+        terminal.PrintSection(TITLE_REMOVE_IRELEVANT_ARTICLES)
         supplier.RemoveCrapArticles()
-        print('    Numar articole: ' + str(supplier.ArticlesCount()))
-        terminal.HorizontalLine()
+        print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
         
         
-        terminal.Title(TITLE_IMPORT_SHOP_DATA)      
+        terminal.PrintSection(TITLE_IMPORT_SHOP_DATA)      
         shopData = Factory.CreateFeedObjectForShop()
         shopData.Import()
         shopData.FilterBySupplier(supplier.code)
-        print('    Numar articole: ' + str(shopData.ArticlesCount()))
-        terminal.HorizontalLine()
+        print(MSG_NUMBER_OF_ARTICLES + str(shopData.ArticlesCount()))
 
         
-        terminal.Title(TITLE_COMPARING_SHOP_AND_SUPPLIER_DATA)
+        terminal.PrintSection(TITLE_COMPARING_SHOP_AND_SUPPLIER_DATA)
         ProcessUpdatedArticles(shopData, supplier)
         newArticles = ProcessNewArticles(shopData, supplier)
         ProcessDeletedArticles(shopData, supplier)
-        terminal.HorizontalLine()
 
         
         DownloadImagesIfUserWants(terminal, newArticles)
@@ -71,13 +63,17 @@ def main():
     terminal.AskInput(MSG_PRESS_ENTER_TO_QUIT)
 
 
-def UpdateSoftware(terminal):    
+def TryUpdateSoftware(terminal):    
     updater = Updater(gitUrl='https://github.com/AdrianMos/feed-importer.git',
                       gitBranch='master',
                       softwarePath = os.getcwd())
 
-    print(updater.GetCurrentSoftwareVersion() + '\n')
-    print('Actualizare software')    
+    print(MSG_SOFTWARE_VERSION.upper()
+          + updater.GetCurrentSoftwareVersion() + '\n')
+
+    terminal.PrintSeparator()
+    print(TITLE_SOFTWARE_UPDATE)
+    
     try :
         updater.Download()
         if updater.IsUpdateRequired():
@@ -85,10 +81,11 @@ def UpdateSoftware(terminal):
             if terminal.AskYesOrNo(QUESTION_UPDATE_SOFTWARE) == YES:
                 updater.Install()
         else:
-            print('  -\n')
+            print(MSG_NO_NEW_SOFTWARE)
+            
     except Exception as ex:
-        print('\n\n Eroare UpdateSoftware(): ' + repr(ex) + '\n')
-        logging.error('main: ' + repr(ex))
+        print(MSG_SOFTWARE_UPDATE_ERROR + repr(ex) + '\n')
+        logging.error('TryUpdateSoftware: ' + repr(ex))
         sys.exit(0)
 
 
@@ -102,7 +99,7 @@ def GetSupplierData(terminal, supplier):
         print(MSG_FEED_ERRORS + str(numErrors))
         
     supplier.ConvertToOurFormat()
-    print('    Numar articole: ' + str(supplier.ArticlesCount()))
+    print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
     
     AskUserConfirmationIfPossibleErrorIsDetected(terminal, supplier)
 
@@ -112,13 +109,14 @@ def AskUserConfirmationIfPossibleErrorIsDetected(terminal, supplier):
             print('Ati renuntat la procesare.')
             sys.exit(0)
 
+
 def DownloadImagesIfUserWants(terminal, articles):
-    terminal.Title(TITLE_DOWNLOAD_NEW_IMAGES)
+    terminal.PrintSection(TITLE_DOWNLOAD_NEW_IMAGES)
     if terminal.AskYesOrNo('Descarc imaginile pentru '
                            + str(articles.ArticlesCount())
                            + ' articole noi?') == YES:
-            articles.DownloadImages();  
-    terminal.HorizontalLine()
+            articles.DownloadImages();
+            
   
 def ProcessUpdatedArticles (shopData, supplier):
     print('\n\nARTICOLE MODIFICATE')
@@ -128,7 +126,7 @@ def ProcessUpdatedArticles (shopData, supplier):
 
     messagesList = supplierCopy.GetComparisonHumanReadableMessages(reference=shopData)
 
-    print('    Numar articole: '+ str(supplierCopy.ArticlesCount())) 
+    print(MSG_NUMBER_OF_ARTICLES+ str(supplierCopy.ArticlesCount())) 
     export.ExportPriceAndAvailabilityAndMessages(supplierCopy, 
                                                  messagesList, 
                                                  supplier.paths.getUpdatedArticlesFile())
@@ -139,7 +137,7 @@ def ProcessDeletedArticles (shopData, supplier):
     articlesToDelete = copy.deepcopy(shopData)
     articlesToDelete.RemoveArticles(supplier)
        
-    print('    Numar articole: ' + str(articlesToDelete.ArticlesCount()))
+    print(MSG_NUMBER_OF_ARTICLES + str(articlesToDelete.ArticlesCount()))
     export.ExportArticlesForDeletion(articlesToDelete,
                                      supplier.paths.getDeletedArticlesFile())
     
@@ -151,9 +149,10 @@ def ProcessNewArticles (shopData, supplier):
     newArticles.RemoveArticles(shopData)
     newArticles.RemoveInactiveArticles()
 
-    print('    Numar articole: ' +  str(newArticles.ArticlesCount()))
+    print(MSG_NUMBER_OF_ARTICLES +  str(newArticles.ArticlesCount()))
     export.ExportAllData(newArticles,  supplier.paths.getNewArticlesFile())
     return newArticles
+
     
 def LogInit(supplier): 
     logging.basicConfig(filename = supplier.paths.getLogFile(),
@@ -161,7 +160,8 @@ def LogInit(supplier):
                         filemode = 'w',
                         format ='%(asctime)s     %(message)s')
 
-def exitApp(data):
+
+def exitApplication(data):
     print("... bye")
     sys.exit(0)
 
@@ -171,7 +171,7 @@ def buildMenu():
                        userMessage = 'Alegeti:')
     
     menu.addMenuItem(name="Iesire",
-                     callback=exitApp,
+                     callback=exitApplication,
                      arguments="")
 
     #format: display_text, invoked_supplier_class

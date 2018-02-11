@@ -52,7 +52,7 @@ class Updater(object):
         
     def GetCurrentSoftwareVersion(self):
         sha = self._getRepositorySha(self._localRepo)
-        msg = 'Versiune  '  + self._getRepositoryDate(self._localRepo) + \
+        msg = self._getRepositoryDate(self._localRepo) + \
               '   SHA: ' + sha[len(sha)-14:] 
         return msg 
         

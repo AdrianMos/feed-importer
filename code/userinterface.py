@@ -2,36 +2,50 @@ from code.messages import *
 
 class UserInterface(object):
     
-    TITLE_LENGTH = 79
+    _instance = None
+    _sectionCounter = 1;
+    
+    LINE_LENGTH = 79
     FILL_CHARACTER = '-'
-    HORIZONTAL_LINE = FILL_CHARACTER * TITLE_LENGTH + '\n'
+    HORIZONTAL_LINE = FILL_CHARACTER * LINE_LENGTH + '\n'
+     
     
-    titleCounter = 1;
-    
-    def MainTitle(self, title):
+    def __init__(self):
+        if UserInterface._instance != None:
+            raise Exception("This class is a singleton!")
+        else:
+            UserInterface._instance = self
+       
+    @staticmethod
+    def getInstance():
+        if UserInterface._instance == None:
+            UserInterface._instance = UserInterface();
+        return UserInterface._instance
+     
+    def PrintTitle(self, title):
+        self.PrintSeparator()
+        print(title.center(self.LINE_LENGTH ,' ').upper()) 
+        print('')
         
-        separator = '\n' + '*' * self.TITLE_LENGTH
-        print(separator + '\n')
-        print(title.center(self.TITLE_LENGTH ,' ')) 
-        print(separator)
+       
+    def PrintSeparator(self):
+        print('*' * self.LINE_LENGTH)
+  
+    def PrintSection(self, title):      
+        titleCountStr = '(' + str(self._sectionCounter) + ')'
         
-    
-    def Title(self, title):
-        
-        titleCountStr = '(' + str(self.titleCounter) + ')'
-        
-        if len(title) <= self.TITLE_LENGTH - 2:
-            formatedTitle = title.upper().center(self.TITLE_LENGTH \
+        if len(title) <= self.LINE_LENGTH - 2:
+            formatedTitle = title.upper().center(self.LINE_LENGTH \
                                                  - len(titleCountStr),
                                                  self.FILL_CHARACTER)
-            print('\n' + titleCountStr + formatedTitle + '\n')
+            print('\n\n' + titleCountStr + formatedTitle + '\n')
         else:
             print(self.HORIZONTAL_LINE +
                   titleCountStr + ' ' +
                   title.upper() + '\n' +
                   self.HORIZONTAL_LINE)
         
-        self.titleCounter += 1
+        self._sectionCounter += 1
     
     def HorizontalLine(self):
         print (self.HORIZONTAL_LINE)
