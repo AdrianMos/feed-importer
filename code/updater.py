@@ -27,7 +27,7 @@ class Updater(object):
     def IsUpdateRequired(self):
         if self._localRepo == None or self._updateRepo == None:
             raise ValueError
-        return self._localRepo.head.commit.hexsha == self._updateRepo.head.commit.hexsha
+        return self._localRepo.head.commit.hexsha != self._updateRepo.head.commit.hexsha
     
     def GetSoftwareUpdateMessage(self):
         sha = self._getRepositorySha(self._localRepo)
@@ -48,7 +48,7 @@ class Updater(object):
         # the script installs the new software and keeps the old configurations
         batchLocation = os.path.join(self.softwarePath, 'upgrade', 'migrate.bat')
         print('Updater.Install called()')
-        #os.startfile(batchLocation)
+        os.startfile(batchLocation)
         
     def GetCurrentSoftwareVersion(self):
         sha = self._getRepositorySha(self._localRepo)
