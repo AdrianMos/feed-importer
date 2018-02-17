@@ -36,8 +36,8 @@ def main():
         export.ExportDataForOnlineshop(supplier, supplier.paths.getSupplierFeedExportFile())
         
         
-        terminal.PrintSection(TITLE_REMOVE_IRELEVANT_ARTICLES)
-        supplier.RemoveCrapArticles()
+        terminal.PrintSection(TITLE_REMOVE_IRRELEVANT_ARTICLES )
+        supplier.RemoveIrrelevantArticles()
         print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
         
         
