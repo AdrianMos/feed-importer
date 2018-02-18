@@ -47,7 +47,7 @@ class ArticlesBabyDreams(Articles):
                                                   available = row["stoc"],
                                                   description = row["descriere"],
                                                   weight = greutate,
-                                                  supplier = "HDRE",
+                                                  supplier = self.getSupplierCode(),
                                                   imagesUrl = images)) 
                 except:
                     logging.error('Import(): Eroare import articol index ' +  str(index) + ' cod (posibil eronat):' + row["cod"])
@@ -87,5 +87,4 @@ class ArticlesBabyDreams(Articles):
             
             filename = filename.replace(" ", "-")
             filename = filename.replace("%20", "-")		
-
         return filename

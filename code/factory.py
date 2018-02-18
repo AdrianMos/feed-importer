@@ -37,17 +37,18 @@ class Factory(object):
         parameters.LoadFromFile(paths.configFile)
 
         descriptionProcessor = DescriptionProcessor()
-        
+        print('4')
         mappingFile = os.path.join("config", parameters.categoryMappingFile);
         parameters.categoryMap = parameters.ReadMapFromFile(mappingFile)
-
+        print('5')
         
         try:
             #call constructor for supplier object
             #class name generated from objectName
             arguments = '(code, paths, parameters, downloader, descriptionProcessor)'
             newObject = eval(str(objectName)+ arguments)
-        except:
+        except Exception as ex:
+            print('\n\n CreateSupplierFeedObject error: ' + repr(ex) + '\n')
             newObject = None
         
         return newObject;
