@@ -35,8 +35,6 @@ class Article(object):
         '''
         Overwrites str function for this object.
         '''
-      
-        
         toString =  ("\n------------------------------------" + 
                 "\nTitle: *" + self.title + "*" + 
                 "\nID: *" + self.id + "*" + "  Price: *" + str(self.price) + "*  Quantity: *" + str(self.quantity) + "*" + 

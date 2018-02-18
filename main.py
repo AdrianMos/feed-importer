@@ -178,7 +178,7 @@ def buildMenu():
     items = [["Actualizare Nancy (NAN) OK",        "ArticlesNancy"],
              ["Actualizare BebeBrands (HBBA) OK",  "ArticlesBebeBrands"],
              ["Actualizare Hubners (HHUB) OK",     "ArticlesHubners"],
-             ["  Actualizare BabyDreams (HDRE)",     "ArticlesBabyDreams"],
+             ["Actualizare BabyDreams (HDRE) OK",  "ArticlesBabyDreams"],
              ["  Actualizare Bebex (BEB)",           "ArticlesBebex"],
              ["  Actualizare BabyShops (HMER)",      "ArticlesBabyShops"],
              ["  Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"]

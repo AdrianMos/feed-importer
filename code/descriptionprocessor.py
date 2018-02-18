@@ -92,7 +92,7 @@ class DescriptionProcessor(object):
                           "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
                           "mega-rampa", "ajutandu-l", "oferindu-le", "ne-am", "care-l", "high-resolution",
                           "display-ul", "de-congelarii", "de-congelare", "printr-o", "U-shape",
-                          "printr-un", "anti-UV", "pop-up", "anti-insecte", "evitandu-se",
+                          "printr-un", "anti-UV", "pop-up", "anti-insecte", "evitandu-se", "a-i",
                           "dispay-ul", "Rasfatati-va", "nedeformandu-se", "integrandu-se", "phtalate-free",
                           "OEKO-TEX", "Marie-Sofie", "re-testate", "facandu-se", "click-uri",
                           "nou-nascutului", "anti-rotire", "re-gandite", "PVC-ul", "non-toxica"];
