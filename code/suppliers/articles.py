@@ -59,7 +59,7 @@ class Articles(object):
         self.downloader.DownloadAndSaveImage(imgUrl, imgSavePath1, imgSavePath2="")       
         
         
-    def RemoveCrapArticles(self):
+    def RemoveIrrelevantArticles(self):
         '''
         Removes unwanted articles.
         '''
@@ -184,13 +184,14 @@ class Articles(object):
         Computes the images paths and names.
         :param article: article used for computing.
         '''
+        #print(str(article.imagesUrl))
         for  i,imageUrl in  enumerate(article.imagesUrl):
             article.imagesNames[i] = self.GenerateImageNameFromUrl(imageUrl)
             article.imagesPaths[i] = self.GenerateImagePath(article, article.imagesNames[i])
             
         article.imageSmallName = self.GenerateSmallImageName(article.imagesNames[0])
         article.imageSmallPath = self.GenerateImagePath(article, article.imageSmallName)
-        
+        #print('id ' + article.id + ' : ' + article.imageSmallName)
     
     def ComputeDescription(self, article):
         '''

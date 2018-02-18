@@ -16,7 +16,7 @@ class DescriptionProcessor(object):
         text = DescriptionProcessor._InsertSpaceAfterComma(text)
         text = DescriptionProcessor._ReplaceUnknownRomanianCharacters(text)
         
-        text = DescriptionProcessor._RemovedUnallowedTags(text)      
+        text = DescriptionProcessor._RemovedUnallowedTagsAndChars(text)      
         text = DescriptionProcessor._ConvertBreaksToOurFormat(text)
         text = DescriptionProcessor._ReplaceDoubleBreaksWithOneBreak(text)
         text = DescriptionProcessor._RemoveEmptyParagraphs(text)
@@ -83,15 +83,24 @@ class DescriptionProcessor(object):
         '''
         match = matchObj.group(0)
         #print(" " + match)
+        
         knownDashWords = ["a-si", "a-l", "ce-i", "intr-un", "intr-unul", "intr-o", "l-am", "i-am",  "sa-si", "sa-l", "a-ti", "si-a",
                          "dintr-o", "dintr-un", "non-toxic", "non-toxice", "ultra-compact", "anti-rasturnare",
                           "mini-geam", "full-option", "crescandu-l", "nou-nascuti", "nou-nascut", "non-alergic",
-                          "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i",
-                          "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si",
+                          "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i", "dreapta-stanga",
+                          "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si", "stanga-dreapta",
                           "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
-                          "mega-rampa"];
-        
-        #TODO: treat separately mega, anti, non...
+                          "mega-rampa", "ajutandu-l", "oferindu-le", "ne-am", "care-l", "high-resolution",
+                          "display-ul", "de-congelarii", "de-congelare", "printr-o", "U-shape", "fata-spate",
+                          "printr-un", "anti-UV", "pop-up", "anti-insecte", "evitandu-se", "a-i",
+                          "dispay-ul", "Rasfatati-va", "nedeformandu-se", "integrandu-se", "phtalate-free",
+                          "OEKO-TEX", "Marie-Sofie", "re-testate", "facandu-se", "click-uri",
+                          "nou-nascutului", "anti-rotire", "re-gandite", "PVC-ul", "non-toxica",
+                          "nu-l", "ce-l"];
+
+        #TODO: implement logic for "anti-" words
+        #TODO: mega-, non- ...
+        #TODO: addd logic to replace english words with romanian "display-ul" -> "ecranul", "high-resolution"
         
         isDashWithinWord = match in knownDashWords    
         if (isDashWithinWord):
@@ -125,12 +134,13 @@ class DescriptionProcessor(object):
     
     @staticmethod
     def _ReplaceUnknownRomanianCharacters(inData):
-        return inData.replace("&#259;","a").replace("&#351;", "s").replace("&#355;", "t")
+        return inData.replace("&#259;","a").replace("&#351;", "s").replace("&#355;", "t").replace("&icirc ", "i")
    
     @staticmethod
-    def _RemovedUnallowedTags(inData):   
+    def _RemovedUnallowedTagsAndChars(inData):   
         text = inData.replace("<div", "<p").replace("&lsquo", "\"").replace("&rsquo", "\"")
-        text = text.replace("&ndash", "-")
+        text = text.replace("&ldquo", "\"").replace("&rdquo", "\"")
+        text = text.replace("&ndash", "-").replace("&bull;", "-")
         
         # Remove invalid tags but keep their content.
         allowedTags = ['p', 'i', 'b', 'strong', 'br', 'span']

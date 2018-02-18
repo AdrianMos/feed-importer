@@ -1,7 +1,7 @@
 import sys
 import os.path
-import logging
 import csv
+import configparser
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -14,64 +14,103 @@ class ArticlesBebex(Articles):
     @staticmethod
     def getSupplierCode():
         return "BEB" 
+
+    def __init__(self, code, paths, parameters, downloader, descriptionProcessor):
+        super().__init__(code, paths, parameters, downloader, descriptionProcessor)
+                
+        config = configparser.ConfigParser()
+        config.read(self.paths.configFile)
         
+        self.columnNo = {}
+        self.columnNo["id"]= config.getint('Import', 'id')
+        self.columnNo["title"] = config.getint('Import', 'title')
+        self.columnNo["price"] = config.getint('Import', 'price')
+        self.columnNo["pricePromo"] = config.getint('Import', 'pricePromo')
+        self.columnNo["description"] = config.getint('Import', 'description')
+        self.columnNo["available"] = config.getint('Import', 'available')
+        self.columnNo["category"] = config.getint('Import', 'category')
+        self.columnNo["weight"] = config.getint('Import', 'weight')
+        self.columnNo["image0"] = config.getint('Import', 'image0')
+        self.columnNo["image1"] = config.getint('Import', 'image1')
+        self.columnNo["image2"] = config.getint('Import', 'image2')
+        self.columnNo["image3"] = config.getint('Import', 'image3')
+        self.columnNo["image4"] = config.getint('Import', 'image4')
+        self.columnNo["image5"] = config.getint('Import', 'image5')
+        self.columnNo["image6"] = config.getint('Import', 'image6')
+        self.columnNo["image7"] = config.getint('Import', 'image7')
+        self.columnNo["image8"] = config.getint('Import', 'image8')
+        
+    
     def Import(self):
-         '''
-         Import articles from csv file
-         '''         
-        
-         '''        
-         0 cod, 1 denumire, 2 categorie, 3 brand, 4 descriere, 5 url_produs, 6 imagine_principala,
-         7 imagine_suplimentara, 8 imagine_suplimentara, 9 imagine_suplimentara, 10 imagine_suplimentara, 
-        11 imagine_suplimentara, 12 imagine_suplimentara, 13 imagine_suplimentara, 14 imagine_suplimentara, 
-        15 pret_recomandat_catre_client, 16 pret_de_achizitie_revanzator, 17 pret_promo_catre_client, 
-        18 pret_promo_achizitie_revanzator, 19 info_pret, 20 tip, 21 pentru, 22 varsta,
-        23 material, 24 culoare, 25 greutate, 26 garantie, 27 disponibilitate
-         '''           
-         print("*** Import articole ...")     
-         print ("    Fisier de import: " + self.paths.feedFile)
-         
-         with open(self.paths.feedFile, 'rt', encoding="latin1") as csvfile:
-             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
+        '''
+        Import articles from csv file
+        '''    
+        print ("    Fisier de import: " + self.paths.feedFile)
+               
+        with open(self.paths.feedFile, "rt") as csvfile:
+             
+             if self.parameters.quotechar!="":
+                reader = csv.reader(csvfile, delimiter=self.parameters.delimiter, quotechar=self.parameters.quotechar)
+             else:
+                reader = csv.reader(csvfile, delimiter=self.parameters.delimiter)
+            
+                      
              counter=0
              for row in reader:
                  counter=counter+1
-                 
-                 if counter>1:
-                     
-                      if row[17] != "NULL":
-                          pretPromo = row[17]
-                      else:
-                          pretPromo = 0;
-                         
-                     
-                      imagesArray = [row[6],  row[7],  row[8],  row[9], row[10],
-                                    row[11], row[12], row[13], row[14],  "", "", ""]
+
+                 isHeaderRow = counter==1
+
+                 if not isHeaderRow:
+                      pret = row[self.columnNo["price"]]
+                      pretPromo = row[self.columnNo["pricePromo"]]
+                      if pretPromo=="" or pretPromo=="NULL":
+                          pretPromo="0"
+                             
+                      images = [row[self.columnNo["image0"]], 
+                                row[self.columnNo["image1"]], 
+                                row[self.columnNo["image2"]], 
+                                row[self.columnNo["image3"]], 
+                                row[self.columnNo["image4"]], 
+                                row[self.columnNo["image5"]], 
+                                row[self.columnNo["image6"]], 
+                                row[self.columnNo["image7"]],
+                                row[self.columnNo["image8"]], "", "", ""]
+
+                      for i in range(0, len(images)):
+                          if images[i] == "NULL":
+                              images[i] = "";
+                                
+                      weight = row[self.columnNo["weight"]]
+                      weight = weight.replace("kg","").replace(",", ".");
                       
-                      for i in range(0, len(imagesArray)):
-                        if imagesArray[i] == "NULL":
-                            imagesArray[i] = "";
-                            
-                      greutate = row[25].replace("kg","").replace(",", ".");
-                                         
-                     
-                      self.articleList.append( Article(id = row[0],
-                                                  title = row[1],
-                                                  description = row[4],
-                                                  price = row[15],
-                                                  pricePromo = pretPromo,
-                                                  weight = greutate,
-                                                  available = row[27],
-                                                  initialCategory = row[2],
-                                                  category = row[2],
-                                                  supplier = "BEB",
-                                                  imagesUrl = imagesArray))
-             
-         print("    Import terminat.")     
-         return -1
+                      # print ("Articol: " + row[ self.columnNo["title"]])
+                      # print ("price: " + row[ self.columnNo["price"]])
+                      # print ("available: " + row[ self.columnNo["available"]])
+                      # print ("cat: " + row[ self.columnNo["category"]])
+                      # print ("des: " + row[ self.columnNo["description"]])
+                      # print ("img: " + row[ self.columnNo["image0"]])
+                      # print ("available: " + row[ self.columnNo["available"]])
+                      
+                      
+                      if row[self.columnNo["id"]]!="":
+                          self.articleList.append( Article(id = row[self.columnNo["id"]],
+                                                           title = row[ self.columnNo["title"]],
+                                                           price = pret,
+                                                           pricePromo = pretPromo,
+                                                           initialCategory = row[ self.columnNo["category"]],
+                                                           category = row[ self.columnNo["category"]],
+                                                           available = row[ self.columnNo["available"]],
+                                                           description = row[ self.columnNo["description"]],
+                                                           weight = weight,
+                                                           supplier = self.getSupplierCode(),
+                                                           imagesUrl = images))
+                      
+                      else:
+                          print("     * articol ignorat: ", row[self.columnNo["title"]])
+
         
-        
-        
+        return -1   
               
     def ComputeAvailability(self, article):
         '''
@@ -83,39 +122,24 @@ class ArticlesBebex(Articles):
             return "Active"
         else:
             return "Inactive"
-          
-                   
-##    def ComputeImages(self, article):
-##        '''
-##        Convert image names to our format. 
-##          original image: http://www.bebex.ro/701-thickbox_default/jucarie-educativa-din-plus-piramida.jpg
-##          after processing should be: BEB/jucarie-educativa-din-plus-piramida.jpg
-##        :param article:
-##        '''
-##        #create a new first element thath will include the link to small image
-##        newImageNames = [article.imagesUrl[0]]
-##        newImageNames.extend(article.images)
-##           
-##        for i in range(0, len(newImageNames)):
-##             
-##             fullPath = newImageNames[i].replace("\\", "/")
-##           
-##             if fullPath=="":
-##                 newPath = ""
-##             else:
-##                 path,file=os.path.split(fullPath)
-##                 
-##                 extension = fullPath[fullPath.rfind("."):]
-##                 posPoint = file.rfind(".")
-##                 
-##                 #Extract all characters until point                
-##                 if i==0:
-##                     #Path to small image, append an _s
-##                     newPath = "BEB/" + file[:posPoint] + "_s" + extension  
-##                 else:
-##                     newPath = "BEB/" + file[:posPoint] + extension
-##             
-##             newPath = newPath.replace(" ", "-")
-##             newPath = newPath.replace("%20", "-")
-##             newImageNames[i] = newPath
-##        return newImageNames
+
+    def GenerateImageNameFromUrl(self, imageUrl):
+        '''
+        Convert image name to our internal naming. 
+          original image:              www.bebex.ro/2079/casuta-pentru-papusi-kaylee.jpg
+          after conversion should be:  2079-casuta-pentru-papusi-kaylee.jpg
+        :param article:
+        '''
+        url = imageUrl.replace("\\", "/")
+        filename = ""
+        if url!="":
+            path,file=os.path.split(url)
+            extension = url[url.rfind("."):]
+            lastDirectoryName = url.split('/')[-2]	    
+            
+            filename = lastDirectoryName + "-" + file
+            
+            filename = filename.replace(" ", "-")
+            filename = filename.replace("%20", "-")		
+        return filename
+    

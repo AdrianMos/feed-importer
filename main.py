@@ -36,8 +36,8 @@ def main():
         export.ExportDataForOnlineshop(supplier, supplier.paths.getSupplierFeedExportFile())
         
         
-        terminal.PrintSection(TITLE_REMOVE_IRELEVANT_ARTICLES)
-        supplier.RemoveCrapArticles()
+        terminal.PrintSection(TITLE_REMOVE_IRRELEVANT_ARTICLES )
+        supplier.RemoveIrrelevantArticles()
         print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
         
         
@@ -175,13 +175,14 @@ def buildMenu():
                      arguments="")
 
     #format: display_text, invoked_supplier_class
-    items = [["Actualizare Nancy (NAN) ok",        "ArticlesNancy"],
-             ["Actualizare BabyDreams (HDRE)",     "ArticlesBabyDreams"],
-             ["Actualizare Bebex (BEB)",           "ArticlesBebex"],
-             ["Actualizare BebeBrands (HBBA) ok",  "ArticlesBebeBrands"],
-             ["Actualizare BabyShops (HMER)",      "ArticlesBabyShops"],
-             ["Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"],
-             ["Actualizare Hubners (HHUB) ok",     "ArticlesHubners"]]
+    items = [["Actualizare Nancy (NAN)",        "ArticlesNancy"],
+             ["Actualizare BebeBrands (HBBA)",  "ArticlesBebeBrands"],
+             ["Actualizare Hubners (HHUB)",     "ArticlesHubners"],
+             ["Actualizare BabyDreams (HDRE)",  "ArticlesBabyDreams"],
+             ["Actualizare Bebex (BEB)",        "ArticlesBebex"],
+             ["Actualizare BabyShops (HMER)",   "ArticlesBabyShops"],
+             ["  NU Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"]
+             ]
 
     for item in items:
         menu.addMenuItem(name = item[0],
