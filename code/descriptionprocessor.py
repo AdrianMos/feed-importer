@@ -87,15 +87,16 @@ class DescriptionProcessor(object):
         knownDashWords = ["a-si", "a-l", "ce-i", "intr-un", "intr-unul", "intr-o", "l-am", "i-am",  "sa-si", "sa-l", "a-ti", "si-a",
                          "dintr-o", "dintr-un", "non-toxic", "non-toxice", "ultra-compact", "anti-rasturnare",
                           "mini-geam", "full-option", "crescandu-l", "nou-nascuti", "nou-nascut", "non-alergic",
-                          "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i",
-                          "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si",
+                          "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i", "dreapta-stanga",
+                          "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si", "stanga-dreapta",
                           "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
                           "mega-rampa", "ajutandu-l", "oferindu-le", "ne-am", "care-l", "high-resolution",
-                          "display-ul", "de-congelarii", "de-congelare", "printr-o", "U-shape",
+                          "display-ul", "de-congelarii", "de-congelare", "printr-o", "U-shape", "fata-spate",
                           "printr-un", "anti-UV", "pop-up", "anti-insecte", "evitandu-se", "a-i",
                           "dispay-ul", "Rasfatati-va", "nedeformandu-se", "integrandu-se", "phtalate-free",
                           "OEKO-TEX", "Marie-Sofie", "re-testate", "facandu-se", "click-uri",
-                          "nou-nascutului", "anti-rotire", "re-gandite", "PVC-ul", "non-toxica"];
+                          "nou-nascutului", "anti-rotire", "re-gandite", "PVC-ul", "non-toxica",
+                          "nu-l", "ce-l"];
 
         #TODO: implement logic for "anti-" words
         #TODO: mega-, non- ...

@@ -22,7 +22,7 @@ class ArticlesBabyShops(Articles):
         print ("    Fisier de import: " + self.paths.feedFile)
         
         with open(self.paths.feedFile, "rt") as csvfile:
-             reader = csv.DictReader(csvfile, delimiter=';', quotechar='"')
+             reader = csv.DictReader(csvfile, delimiter=self.parameters.delimiter, quotechar=self.parameters.quotechar)
                       
              for row in reader:     
                          
@@ -40,12 +40,19 @@ class ArticlesBabyShops(Articles):
                   	descriere = row["Short description"]    
                                     
                   categorie=row["Category"]
-                    
-                  images = [x.strip() for x in str(row["Image URL"]).split(',')]
-                                 
+
+                  images = [row["Image URL"], 
+                            row["Image URL alt1"], 
+                            row["Image URL alt2"], 
+                            row["Image URL alt3"], 
+                            row["Image URL alt4"], 
+                            row["Image URL alt5"], 
+                            row["Image URL alt6"], 
+                            row["Image URL alt7"],
+                            row["Image URL alt8"],
+                            row["Image URL alt9"], "", ""]           
                
                   if row["Sku"]!="":
-                      #Adauga articolul
                       self.articleList.append( Article(id = row["Sku"],
                                                   title = row["Name"],
                                                   price = pret,
@@ -55,7 +62,7 @@ class ArticlesBabyShops(Articles):
                                                   available = row["Stock"],
                                                   description = descriere,
                                                   weight = greutate,
-                                                  supplier = "HMER",
+                                                  supplier = self.getSupplierCode(),
                                                   imagesUrl = images)) 
                   else:
                       print("     * articol ignorat, lipseste modelul (id): ", row["Name"])         
@@ -72,43 +79,3 @@ class ArticlesBabyShops(Articles):
             return "Inactive"
         else:
             return "Active"
-        
-        
-##    def ComputeImages(self, article):
-##        '''
-##        Convert image names to our format. 
-##          original image: http://babyshops.ro/shop_ordered/9413/shop_pic/20070101.jpg
-##          after trimming should be: HMER/20070101.jpg
-##        :param article:
-##        '''
-##        
-##        #create a new first element that will include the link to small image
-##        newImageNames = [article.imagesUrl[0]]
-##        newImageNames.extend(article.images)          
-##        
-##        for i in range(0, len(newImageNames)):
-##            fullPath = newImageNames[i].replace("//", "/")
-##            
-##            if fullPath=="":
-##                newPath = ""
-##            else:
-##                path,file=os.path.split(fullPath)
-##                extension = fullPath[fullPath.rfind("."):]
-##                
-##                #Extract all characters until second underscore.                
-##                if i==0:
-##                    #Path to small image, append an _s
-##                    newPath = "HMER/" + file[:file.rfind(".")] + "_s" + extension
-##                else:
-##                    newPath = "HMER/" + file
-##            
-##            newPath = newPath.replace(" ", "-")
-##            newPath = newPath.replace("%20", "-")  
-##            newImageNames[i] = newPath
-##        
-##        # Extend the list to the maximum elements
-##        for i in range(len(newImageNames), 13):
-##            newImageNames.append("")
-##        
-##            
-##        return newImageNames

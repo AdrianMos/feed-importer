@@ -37,10 +37,8 @@ class Factory(object):
         parameters.LoadFromFile(paths.configFile)
 
         descriptionProcessor = DescriptionProcessor()
-        print('4')
         mappingFile = os.path.join("config", parameters.categoryMappingFile);
         parameters.categoryMap = parameters.ReadMapFromFile(mappingFile)
-        print('5')
         
         try:
             #call constructor for supplier object

@@ -175,13 +175,13 @@ def buildMenu():
                      arguments="")
 
     #format: display_text, invoked_supplier_class
-    items = [["Actualizare Nancy (NAN) OK",        "ArticlesNancy"],
-             ["Actualizare BebeBrands (HBBA) OK",  "ArticlesBebeBrands"],
-             ["Actualizare Hubners (HHUB) OK",     "ArticlesHubners"],
-             ["Actualizare BabyDreams (HDRE) OK",  "ArticlesBabyDreams"],
-             ["  Actualizare Bebex (BEB)",           "ArticlesBebex"],
-             ["  Actualizare BabyShops (HMER)",      "ArticlesBabyShops"],
-             ["  Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"]
+    items = [["Actualizare Nancy (NAN)",        "ArticlesNancy"],
+             ["Actualizare BebeBrands (HBBA)",  "ArticlesBebeBrands"],
+             ["Actualizare Hubners (HHUB)",     "ArticlesHubners"],
+             ["Actualizare BabyDreams (HDRE)",  "ArticlesBabyDreams"],
+             ["Actualizare Bebex (BEB)",        "ArticlesBebex"],
+             ["Actualizare BabyShops (HMER)",   "ArticlesBabyShops"],
+             ["  NU Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"]
              ]
 
     for item in items:
