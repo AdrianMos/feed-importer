@@ -90,15 +90,16 @@ class DescriptionProcessor(object):
                           "dandu-i", "anti-umezeala", "anti-alergic", "anti-alergica", "asigurandu-i",
                           "oferindu-i", "de-a", "Oeko-Tex", "anti-alunecare", "auto-oprire", "pastrandu-si",
                           "pernita-suport", "mentinandu-i", "ajustandu-se", "transformandu-se", "cauza-efect",
-                          "mega-rampa", "ajutandu-l", "oferindu-le", "ne-am", "care-l",
-                          "display-ul", "de-congelarii", "de-congelare", "printr-o",
+                          "mega-rampa", "ajutandu-l", "oferindu-le", "ne-am", "care-l", "high-resolution",
+                          "display-ul", "de-congelarii", "de-congelare", "printr-o", "U-shape",
                           "printr-un", "anti-UV", "pop-up", "anti-insecte", "evitandu-se",
-                          "dispay-ul", "Rasfatati-va", "nedeformandu-se", "integrandu-se",
-                          "OEKO-TEX", "Marie-Sofie", "re-testate"];
+                          "dispay-ul", "Rasfatati-va", "nedeformandu-se", "integrandu-se", "phtalate-free",
+                          "OEKO-TEX", "Marie-Sofie", "re-testate", "facandu-se", "click-uri",
+                          "nou-nascutului", "anti-rotire", "re-gandite", "PVC-ul", "non-toxica"];
 
         #TODO: implement logic for "anti-" words
         #TODO: mega-, non- ...
-        #TODO: addd logic to replace english words with romanian "display-ul" -> "ecranul"
+        #TODO: addd logic to replace english words with romanian "display-ul" -> "ecranul", "high-resolution"
         
         isDashWithinWord = match in knownDashWords    
         if (isDashWithinWord):
@@ -138,7 +139,7 @@ class DescriptionProcessor(object):
     def _RemovedUnallowedTagsAndChars(inData):   
         text = inData.replace("<div", "<p").replace("&lsquo", "\"").replace("&rsquo", "\"")
         text = text.replace("&ldquo", "\"").replace("&rdquo", "\"")
-        text = text.replace("&ndash", "-")
+        text = text.replace("&ndash", "-").replace("&bull;", "-")
         
         # Remove invalid tags but keep their content.
         allowedTags = ['p', 'i', 'b', 'strong', 'br', 'span']
