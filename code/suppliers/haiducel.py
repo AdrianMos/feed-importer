@@ -2,6 +2,7 @@ import sys
 import os.path
 import csv
 import logging
+from code.messages import *
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -25,10 +26,11 @@ class ArticlesHaiducel(Articles):
          print ("    Fisier de import: " + self.paths.feedFile)
          
          if (not os.path.isfile(self.paths.feedFile)):
-             logging.error('HaiducelArticles: Import: Nu s-a gasit feed-ul Haiducel la calea: ' 
-                            + self.paths.feedFile)
-             print("\nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
-             sys.exit("   \nEROARE: Nu s-a gasit feed-ul Haiducel !!!")
+             message = '   \nEROARE: Nu s-a gasit feed-ul Haiducel la calea: ' \
+                       + self.paths.feedFile             
+             logging.error(message)
+             PrintExeptionAndQuit(message, None)
+             
           
          with open(self.paths.feedFile, 'rt', encoding="latin1") as csvfile:
              

@@ -2,7 +2,7 @@ import sys, os.path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from code.article import Article
-
+from code.messages import *
 
 import codecs
 import csv
@@ -12,8 +12,7 @@ import pdb
 import logging
 from _ast import Try
 from bs4 import BeautifulSoup, NavigableString
-#import bleach
-#import re
+
 import configparser
 
 
@@ -37,10 +36,11 @@ class Articles(object):
             try:
                 os.makedirs(supplierFolder)
             except OSError as ex:
-                sys.exit("Nu se poate crea folderul pentru acest cod: " + ex.reason)
-                logging.error("Articles constructor: nu se poate crea folderul <" + supplierFolder + "> : mesaj : " + ex.reason)
+                message = "Articles(): nu se poate crea folderul <" + supplierFolder + ">: mesaj :"
+                logging.error(message)
+                PrintExeptionAndQuit(message, ex)
                 raise
-    
+
     
     @staticmethod
     def getSupplierCode():
@@ -63,11 +63,11 @@ class Articles(object):
         '''
         Removes unwanted articles.
         '''
-        crap = ['olita', 'olite', 'scutec', 'reductor wc', 'capac wc', 'servetel', 'tampoane', 'tampon', 'prosop', 'suzeta', 'sosetele', 'tacamuri']
-        print("    Articolele ce contin in titlu ", crap, " sunt eliminate.")
+        toRemove = ['olita', 'olite', 'scutec', 'reductor wc', 'capac wc', 'servetel', 'tampoane', 'tampon', 'prosop', 'suzeta', 'sosetele', 'tacamuri']
+        print("    Articolele ce contin in titlu ", toRemove, " sunt eliminate.")
         
         itemsBeforeRemoval = self.ArticlesCount()
-        self.articleList = [art for art in self.articleList if not any(crapDetector in art.title.lower() for crapDetector in crap)]
+        self.articleList = [art for art in self.articleList if not any(detector in art.title.lower() for detector in toRemove)]
          
         print("    Articole eliminate din feed: " + str(itemsBeforeRemoval - self.ArticlesCount()))
 
@@ -131,11 +131,13 @@ class Articles(object):
         else:
             splitSection = section.split("#")
             if len(splitSection)!=2 :
-                print("    EROARE: sectiunea [" + section + "] trebuie sa fie de forma [categorie#subcategorie]")
-                sys.exit("   \nEROARE: Sectiune invalida in fisierul de mapare: [" + section + "] !!!")
+                message = "   \nEROARE: Sectiune invalida in fisierul de mapare,\n" \
+                          +  "sectiunea [" + section + "] trebuie sa fie de forma [categorie#subcategorie]"
+                PrintExeptionAndQuit(message, None)
+                
             article.category = splitSection[0]
             article.subcategory = splitSection[1]
-            #print("*** category:" + article.category + " subcategory:" + article.subcategory)
+
         
         return article
       

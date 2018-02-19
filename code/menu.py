@@ -34,7 +34,7 @@ class Menu:
                 else:
                     break
             except:
-                print("    invalid option")             
+                print("    optiune invalida")             
         return option
     
     def openMenu(self):
@@ -44,8 +44,8 @@ class Menu:
         hasOptions = len(self.items)>0
         if hasOptions:
             option = self.getUserOption()
-            print(str(self.items[option].function))
-            print(str(self.items[option].arguments))
+            #print(str(self.items[option].function))
+            #print(str(self.items[option].arguments))
             callbackAnswer = self.items[option].function(self.items[option].arguments)
         return callbackAnswer
     

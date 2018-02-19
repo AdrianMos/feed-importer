@@ -21,10 +21,9 @@ def main():
     #the menu callback creates the supplier feed object
     #according to the user selection
     supplier = menu.openMenu()
-
     if not isinstance(supplier, Articles):
-        print(ERROR_SUPPLIER_BAD_INSTANCE_TYPE)
-        sys.exit(0)   
+        PrintExeptionAndQuit(ERROR_SUPPLIER_BAD_INSTANCE_TYPE, None)
+    
     try:       
         LogInit(supplier)
 
@@ -36,7 +35,7 @@ def main():
         export.ExportDataForOnlineshop(supplier, supplier.paths.getSupplierFeedExportFile())
         
         
-        terminal.PrintSection(TITLE_REMOVE_IRRELEVANT_ARTICLES )
+        terminal.PrintSection(TITLE_REMOVE_IRRELEVANT_ARTICLES)
         supplier.RemoveIrrelevantArticles()
         print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
         
@@ -57,10 +56,9 @@ def main():
         DownloadImagesIfUserWants(terminal, newArticles)
           
     except Exception as ex:
-        print('\n\n Eroare: ' + repr(ex) + '\n')
-        logging.error('main: ' + repr(ex))
-      
-    terminal.AskInput(MSG_PRESS_ENTER_TO_QUIT)
+        PrintExeptionAndQuit(ERROR_MSG, ex)
+        
+    input(MSG_PRESS_ENTER_TO_QUIT)
 
 
 def TryUpdateSoftware(terminal):    
@@ -84,16 +82,13 @@ def TryUpdateSoftware(terminal):
             print(MSG_NO_NEW_SOFTWARE)
             
     except Exception as ex:
-        print(MSG_SOFTWARE_UPDATE_ERROR + repr(ex) + '\n')
-        logging.error('TryUpdateSoftware: ' + repr(ex))
-        sys.exit(0)
+        print(MSG_SOFTWARE_UPDATE_FAILED)
 
 
 def GetSupplierData(terminal, supplier):
     if terminal.AskYesOrNo(QUESTION_DOWNLOAD_FEED) == YES:
         supplier.DownloadFeed()       
         
-    print('\n    Cod: ' + supplier.code)
     numErrors = supplier.Import()
     if numErrors > 0:
         print(MSG_FEED_ERRORS + str(numErrors))
@@ -101,25 +96,27 @@ def GetSupplierData(terminal, supplier):
     supplier.ConvertToOurFormat()
     print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
     
-    AskUserConfirmationIfPossibleErrorIsDetected(terminal, supplier)
+    AskUserConfirmationToContinueIfPossibleErrorIsDetected(terminal, supplier)
 
-def AskUserConfirmationIfPossibleErrorIsDetected(terminal, supplier):
+
+def AskUserConfirmationToContinueIfPossibleErrorIsDetected(terminal, supplier):
     if supplier.ArticlesCount() < 50:            
         if terminal.AskYesOrNo(MSG_WARNING_LESS_50_ARTICLES + QUESTION_CONTINUE) == NO:
-            print('Ati renuntat la procesare.')
-            sys.exit(0)
+            PrintExeptionAndQuit(MSG_USER_SELECTION_QUIT, None)
 
 
 def DownloadImagesIfUserWants(terminal, articles):
     terminal.PrintSection(TITLE_DOWNLOAD_NEW_IMAGES)
-    if terminal.AskYesOrNo('Descarc imaginile pentru '
-                           + str(articles.ArticlesCount())
-                           + ' articole noi?') == YES:
+
+    askUserMessage = QUESTION_DOWNLOAD_IMAGES_FOR_NEW_ARTICLES \
+                     + ' (' + str(articles.ArticlesCount()) + ')'
+                     
+    if terminal.AskYesOrNo(askUserMessage) == YES:
             articles.DownloadImages();
-            
+          
   
 def ProcessUpdatedArticles (shopData, supplier):
-    print('\n\nARTICOLE MODIFICATE')
+    print(SUBTITLE_UPDATED_ARTICLES)
     supplierCopy = copy.deepcopy(supplier)
     supplierCopy.IntersectWith(shopData)
     supplierCopy.RemoveArticlesWithNoUpdatesComparedToReference(reference=shopData)
@@ -133,7 +130,7 @@ def ProcessUpdatedArticles (shopData, supplier):
     
     
 def ProcessDeletedArticles (shopData, supplier):
-    print('\n\nARTICOLE STERSE')
+    print(SUBTITLE_DELETED_ARTICLES)
     articlesToDelete = copy.deepcopy(shopData)
     articlesToDelete.RemoveArticles(supplier)
        
@@ -144,7 +141,7 @@ def ProcessDeletedArticles (shopData, supplier):
 
 
 def ProcessNewArticles (shopData, supplier):
-    print('\n\nARTICOLE NOI')
+    print(SUBTITLE_NEW_ARTICLES)
     newArticles = copy.deepcopy(supplier)
     newArticles.RemoveArticles(shopData)
     newArticles.RemoveInactiveArticles()
@@ -180,8 +177,8 @@ def buildMenu():
              ["Actualizare Hubners (HHUB)",     "ArticlesHubners"],
              ["Actualizare BabyDreams (HDRE)",  "ArticlesBabyDreams"],
              ["Actualizare Bebex (BEB)",        "ArticlesBebex"],
-             ["Actualizare BabyShops (HMER)",   "ArticlesBabyShops"],
-             ["  NU Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"]
+             ["Actualizare BabyShops (HMER)",   "ArticlesBabyShops"]
+             #,["  NU Actualizare KidsDecor (HDEC)",      "ArticlesKidsDecor"]
              ]
 
     for item in items:

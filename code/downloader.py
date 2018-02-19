@@ -2,6 +2,7 @@ import os.path
 import requests
 import urllib.request
 import sys
+from code.messages import *
 
 class Downloader(object):
    
@@ -19,8 +20,8 @@ class Downloader(object):
                                     auth=(self.credentials.username, self.credentials.password))
                                     
             if  response.status_code != 200:
-                print("\nEROARE: Parola si/sau utilizatorul nu sunt valide, status: " + str(response.status_code))
-                sys.exit("   \nEROARE: Parola si/sau utilizatorul nu sunt valide, status: " + str(response.status_code))
+                message = "   \nEROARE: Parola si/sau utilizatorul nu sunt valide, status: " + str(response.status_code)
+                PrintExeptionAndQuit(message, None)
             
             feedData = response.text 
             
