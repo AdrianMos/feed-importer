@@ -37,7 +37,7 @@ class Menu:
                 print("    optiune invalida")             
         return option
     
-    def openMenu(self):
+    def openAndExecuteMenuOption(self):
         self.printMenu()
         
         option=None

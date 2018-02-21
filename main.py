@@ -1,5 +1,4 @@
 import os.path, sys, logging, copy
-
 from code.userinterface import UserInterface
 from code.factory import Factory
 from code.export import Export
@@ -11,16 +10,14 @@ from code.updater import Updater
 export = Export()
 
 def main():
-    
     terminal = UserInterface()
     terminal.PrintTitle(TITLE_SOFTWARE)
     
     TryUpdateSoftware(terminal)
 
     menu = buildMenu()
-    #the menu callback creates the supplier feed object
-    #according to the user selection
-    supplier = menu.openMenu()
+    #the menu callbar creates the supplier feed object
+    supplier = menu.openAndExecuteMenuOption()
     if not isinstance(supplier, Articles):
         PrintExeptionAndQuit(ERROR_SUPPLIER_BAD_INSTANCE_TYPE, None)
     
@@ -37,14 +34,14 @@ def main():
         
         terminal.PrintSection(TITLE_REMOVE_IRRELEVANT_ARTICLES)
         supplier.RemoveIrrelevantArticles()
-        print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
+        PrintArticlesNumber(supplier)
         
         
         terminal.PrintSection(TITLE_IMPORT_SHOP_DATA)      
         shopData = Factory.CreateFeedObjectForShop()
         shopData.Import()
         shopData.FilterBySupplier(supplier.code)
-        print(MSG_NUMBER_OF_ARTICLES + str(shopData.ArticlesCount()))
+        PrintArticlesNumber(shopData)
 
         
         terminal.PrintSection(TITLE_COMPARING_SHOP_AND_SUPPLIER_DATA)
@@ -59,6 +56,10 @@ def main():
         PrintExeptionAndQuit(ERROR_MSG, ex)
         
     input(MSG_PRESS_ENTER_TO_QUIT)
+
+
+def PrintArticlesNumber(articlesObject):
+    print(MSG_NUMBER_OF_ARTICLES + str(articlesObject.ArticlesCount()))
 
 
 def TryUpdateSoftware(terminal):    
@@ -94,7 +95,7 @@ def GetSupplierData(terminal, supplier):
         print(MSG_FEED_ERRORS + str(numErrors))
         
     supplier.ConvertToOurFormat()
-    print(MSG_NUMBER_OF_ARTICLES + str(supplier.ArticlesCount()))
+    PrintArticlesNumber(supplier)
     
     AskUserConfirmationToContinueIfPossibleErrorIsDetected(terminal, supplier)
 
@@ -123,7 +124,7 @@ def ProcessUpdatedArticles (shopData, supplier):
 
     messagesList = supplierCopy.GetComparisonHumanReadableMessages(reference=shopData)
 
-    print(MSG_NUMBER_OF_ARTICLES+ str(supplierCopy.ArticlesCount())) 
+    PrintArticlesNumber(supplierCopy)
     export.ExportPriceAndAvailabilityAndMessages(supplierCopy, 
                                                  messagesList, 
                                                  supplier.paths.getUpdatedArticlesFile())
@@ -134,11 +135,10 @@ def ProcessDeletedArticles (shopData, supplier):
     articlesToDelete = copy.deepcopy(shopData)
     articlesToDelete.RemoveArticles(supplier)
        
-    print(MSG_NUMBER_OF_ARTICLES + str(articlesToDelete.ArticlesCount()))
+    PrintArticlesNumber(articlesToDelete)
     export.ExportArticlesForDeletion(articlesToDelete,
                                      supplier.paths.getDeletedArticlesFile())
     
-
 
 def ProcessNewArticles (shopData, supplier):
     print(SUBTITLE_NEW_ARTICLES)
@@ -146,7 +146,7 @@ def ProcessNewArticles (shopData, supplier):
     newArticles.RemoveArticles(shopData)
     newArticles.RemoveInactiveArticles()
 
-    print(MSG_NUMBER_OF_ARTICLES +  str(newArticles.ArticlesCount()))
+    PrintArticlesNumber(newArticles)
     export.ExportAllData(newArticles,  supplier.paths.getNewArticlesFile())
     return newArticles
 
@@ -187,6 +187,7 @@ def buildMenu():
                          arguments = item[1])
         
     return menu
+
                         
 if __name__ == '__main__':
     main()
