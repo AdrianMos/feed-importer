@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{faeafef7-a60d-4ebf-89dd-8d92c71cb145}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>main.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>Global|PythonCore|3.6</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="architecture\feed-importer-uml.html" />
+    <Content Include="code\unittests\description_expected_hbba.txt" />
+    <Content Include="code\unittests\description_expected_nan.txt" />
+    <Content Include="code\unittests\description_input_hbba.txt" />
+    <Content Include="code\unittests\description_input_nan.txt" />
+    <Content Include="config\configBEB.ini" />
+    <Content Include="config\configHBBA.ini" />
+    <Content Include="config\configHDRE.ini" />
+    <Content Include="config\configHHUB.ini" />
+    <Content Include="config\configHMER.ini" />
+    <Content Include="config\configNAN.ini" />
+    <Content Include="config\credentials\credentialsBEB.ini" />
+    <Content Include="config\credentials\credentialsHBBA.ini" />
+    <Content Include="config\credentials\credentialsHDRE.ini" />
+    <Content Include="config\credentials\credentialsHHUB.ini" />
+    <Content Include="config\credentials\credentialsNAN.ini" />
+    <Content Include="config\mappingDefault.ini" />
+    <Content Include="config\mappingHBBA.ini" />
+    <Content Include="data\_ imagini noi\mari neprocesate\10898_cutie-protectie-cadite-.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\11365_Co-5-straturi.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\12127_suport-anatomic-cars-alb.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\12864_cadita-cu-termometru-lulu-alb.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\13143_carucior-kunert-volver-gri-rosu.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\13655_taburet-cars-antialunecare-red.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\13695_roz-2.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\15246_taburet-antialunecare-lulu-alb.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\16270_carucior-copii-2-in-1-Kunert-Vip-rosu-cerculete-3.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\16970_suport-anatomic-cars-red.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\17738_carucior-copii-3-in-1-Kunert-Vip-rosu-cerculete-1.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\18690_carucior-copii-2-in-1-Kunert-Vip-rosu-cerculete-1.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\18783_carucior-kunert-volver-alb-roz.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\20913_carucior-kunert-volver-Gri-cu-patratele.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\24752_suport-anantomic-lulu-alb.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\28512_cadita-cu-termometru-cars-red.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\43680_taburet-cars-antialunecare-alb.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\58079_Co-5-straturi.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\63261_suport-aanatomic-bears-beige.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\68518_patrut-cu-sertar-little-giraffe-wenge.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\69231_cadita--cu-termometru-cars-alb.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\75198_roz-1.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\85595_cutie-protectie-patut-duo.jpg" />
+    <Content Include="data\_ imagini noi\mari neprocesate\87832_carucior-copii-2-in-1-Kunert-Vip-rosu-cerculete-2.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\10898_cutie-protectie-cadite-.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\12127_suport-anatomic-cars-alb.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\12864_cadita-cu-termometru-lulu-alb.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\13143_carucior-kunert-volver-gri-rosu.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\13655_taburet-cars-antialunecare-red.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\15246_taburet-antialunecare-lulu-alb.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\16970_suport-anatomic-cars-red.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\17738_carucior-copii-3-in-1-Kunert-Vip-rosu-cerculete-1.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\18783_carucior-kunert-volver-alb-roz.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\20913_carucior-kunert-volver-Gri-cu-patratele.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\24752_suport-anantomic-lulu-alb.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\28512_cadita-cu-termometru-cars-red.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\43680_taburet-cars-antialunecare-alb.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\63261_suport-aanatomic-bears-beige.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\68518_patrut-cu-sertar-little-giraffe-wenge.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\69231_cadita--cu-termometru-cars-alb.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\75198_roz-1.jpg" />
+    <Content Include="data\_ imagini noi\mici neprocesate\85595_cutie-protectie-patut-duo.jpg" />
+    <Content Include="dependencies.txt" />
+    <Content Include="upgrade\git-repo\architecture\feed-importer-uml.html" />
+    <Content Include="upgrade\git-repo\code\unittests\description_expected_hbba.txt" />
+    <Content Include="upgrade\git-repo\code\unittests\description_expected_nan.txt" />
+    <Content Include="upgrade\git-repo\code\unittests\description_input_hbba.txt" />
+    <Content Include="upgrade\git-repo\code\unittests\description_input_nan.txt" />
+    <Content Include="upgrade\git-repo\config\configBEB.ini" />
+    <Content Include="upgrade\git-repo\config\configHBBA.ini" />
+    <Content Include="upgrade\git-repo\config\configHDRE.ini" />
+    <Content Include="upgrade\git-repo\config\configHHUB.ini" />
+    <Content Include="upgrade\git-repo\config\configHMER.ini" />
+    <Content Include="upgrade\git-repo\config\configNAN.ini" />
+    <Content Include="upgrade\git-repo\config\mappingDefault.ini" />
+    <Content Include="upgrade\git-repo\config\mappingHBBA.ini" />
+    <Content Include="upgrade\git-repo\dependencies.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="code\article.py" />
+    <Compile Include="code\credentials.py" />
+    <Compile Include="code\descriptionprocessor.py" />
+    <Compile Include="code\downloader.py" />
+    <Compile Include="code\export.py" />
+    <Compile Include="code\factory.py" />
+    <Compile Include="code\menu.py" />
+    <Compile Include="code\messages.py" />
+    <Compile Include="code\parameters.py" />
+    <Compile Include="code\pathbuilder.py" />
+    <Compile Include="code\suppliers\articles.py" />
+    <Compile Include="code\suppliers\babydreams.py" />
+    <Compile Include="code\suppliers\babyshops.py" />
+    <Compile Include="code\suppliers\bebebrands.py" />
+    <Compile Include="code\suppliers\bebex.py" />
+    <Compile Include="code\suppliers\haiducel.py" />
+    <Compile Include="code\suppliers\hubners.py" />
+    <Compile Include="code\suppliers\kidsdecor.py" />
+    <Compile Include="code\suppliers\nancy.py" />
+    <Compile Include="code\suppliers\__init__.py" />
+    <Compile Include="code\unittests\test-descriptionprocessor.py" />
+    <Compile Include="code\updater.py" />
+    <Compile Include="code\userinterface.py" />
+    <Compile Include="code\__init__.py" />
+    <Compile Include="main.py" />
+    <Compile Include="upgrade\git-repo\code\article.py" />
+    <Compile Include="upgrade\git-repo\code\credentials.py" />
+    <Compile Include="upgrade\git-repo\code\descriptionprocessor.py" />
+    <Compile Include="upgrade\git-repo\code\downloader.py" />
+    <Compile Include="upgrade\git-repo\code\export.py" />
+    <Compile Include="upgrade\git-repo\code\factory.py" />
+    <Compile Include="upgrade\git-repo\code\menu.py" />
+    <Compile Include="upgrade\git-repo\code\messages.py" />
+    <Compile Include="upgrade\git-repo\code\parameters.py" />
+    <Compile Include="upgrade\git-repo\code\pathbuilder.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\articles.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\babydreams.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\babyshops.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\bebebrands.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\bebex.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\haiducel.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\hubners.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\kidsdecor.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\nancy.py" />
+    <Compile Include="upgrade\git-repo\code\suppliers\__init__.py" />
+    <Compile Include="upgrade\git-repo\code\unittests\test-descriptionprocessor.py" />
+    <Compile Include="upgrade\git-repo\code\updater.py" />
+    <Compile Include="upgrade\git-repo\code\userinterface.py" />
+    <Compile Include="upgrade\git-repo\code\__init__.py" />
+    <Compile Include="upgrade\git-repo\main.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="architecture" />
+    <Folder Include="code" />
+    <Folder Include="code\suppliers" />
+    <Folder Include="code\unittests" />
+    <Folder Include="config" />
+    <Folder Include="config\credentials" />
+    <Folder Include="data\" />
+    <Folder Include="data\_ imagini noi\" />
+    <Folder Include="data\_ imagini noi\mari neprocesate" />
+    <Folder Include="data\_ imagini noi\mici neprocesate" />
+    <Folder Include="upgrade\" />
+    <Folder Include="upgrade\git-repo" />
+    <Folder Include="upgrade\git-repo\architecture" />
+    <Folder Include="upgrade\git-repo\code" />
+    <Folder Include="upgrade\git-repo\code\suppliers" />
+    <Folder Include="upgrade\git-repo\code\unittests" />
+    <Folder Include="upgrade\git-repo\config" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>

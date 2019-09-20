@@ -31,7 +31,8 @@ class Downloader(object):
         else:
             response = urllib.request.urlopen(downloadUrl)
                           
-            feedData = response.read().decode("utf-8-sig").encode("raw_unicode_escape")
+            feedData = response.read() 
+            #.decode("utf-8-sig").encode("raw_unicode_escape")
             feedData = feedData.decode('unicode_escape').encode('ascii','ignore')
          
             with open(savePath, "wb") as textfile:
@@ -43,7 +44,7 @@ class Downloader(object):
     def DownloadAndSaveImage(self, imgUrl, imgSavePath1, imgSavePath2=""):
         try:
             imgUrl = imgUrl.replace(" ", "%20")
-            imgUrl = self.RepairBrokenUrl(imgUrl)
+            imgUrl = self._RepairBrokenUrl(imgUrl)
             
             user_agent = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.19 (KHTML, like Gecko) ' + \
                          'Ubuntu/12.04 Chromium/18.0.1025.168 Chrome/18.0.1025.168 Safari/535.19'
@@ -93,10 +94,6 @@ class Downloader(object):
             logging.error("DownloadAndSaveImage : nu se poate downloada <" + imgUrl + "> motiv: " + ex.reason + " ++" + str(sys.exc_info()[0]))   
             raise
     
-    def RepairBrokenUrl(self, url):
-        repaired = url.replace(":www", "://www")
-        return repaired
-    
     def DownloadImages(self, articleList):
         '''
         Downloads the customer images
@@ -136,6 +133,10 @@ class Downloader(object):
             sys.stdout.write("/")
             sys.stdout.flush()
         print("\n") 
+        
+    def _RepairBrokenUrl(self, url):
+        repaired = url.replace(":www", "://www")
+        return repaired
     
     
     

@@ -10,6 +10,8 @@ from code.updater import Updater
 export = Export()
 
 def main():
+    
+
     terminal = UserInterface()
     terminal.PrintTitle(TITLE_SOFTWARE)
     

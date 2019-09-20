@@ -13,6 +13,7 @@ class Parameters(object):
         self.delimiter = '|'
         self.quotechar = '"' 
         self.categoryMappingFile = ''
+        self.categoryMap = None
                  
      
     def LoadFromFile(self, file):

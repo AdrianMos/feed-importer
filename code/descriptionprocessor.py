@@ -8,9 +8,7 @@ class DescriptionProcessor(object):
 
     @staticmethod 
     def CleanDescription(inData):
-        
         text = inData.replace("MyKids","").replace("BABY MIX","")
-
 
         text = DescriptionProcessor._InsertSpaceBetweenSentences(text)
         text = DescriptionProcessor._InsertSpaceAfterComma(text)
@@ -31,7 +29,6 @@ class DescriptionProcessor(object):
     
     @staticmethod   
     def _MoveDashedLinesOnNewRow(inData):
-            
             zeroOrMoreSpaceChars = r" *" 
             wordNoNumbersAtLeastOneChar = r"[^\W\d_]+"
             wordNoNumbers = r"[^\W\d_]*"

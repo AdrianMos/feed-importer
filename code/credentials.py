@@ -13,11 +13,9 @@ class Credentials(object):
         self.password = ""
      
     def LoadFromFile(self, file):
-        
         if not os.path.isfile(file):
             print('ATENTIE: Nu se pot citi utilizatorul si parola din fisier, fisierul nu exista: ' + file)
         else:     
-            
             config = configparser.ConfigParser()
             config.read(file)
        

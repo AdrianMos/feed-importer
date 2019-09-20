@@ -27,29 +27,25 @@ class UserInterface(object):
         print(title.center(self.LINE_LENGTH ,' ').upper()) 
         print('')
         
-       
     def PrintSeparator(self):
         print('*' * self.LINE_LENGTH)
   
-    def PrintSection(self, title):      
-        titleCountStr = '(' + str(self._sectionCounter) + ')'
+    def PrintSection(self, section):      
+        sectionCountStr = '(' + str(self._sectionCounter) + ')'
         
-        if len(title) <= self.LINE_LENGTH - 2:
-            formatedTitle = title.upper().center(self.LINE_LENGTH \
-                                                 - len(titleCountStr),
+        if len(section) <= self.LINE_LENGTH - 2:
+            formatedTitle = section.upper().center(self.LINE_LENGTH \
+                                                 - len(sectionCountStr),
                                                  self.FILL_CHARACTER)
-            print('\n\n' + titleCountStr + formatedTitle + '\n')
+            print('\n\n' + sectionCountStr + formatedTitle + '\n')
         else:
             print(self.HORIZONTAL_LINE +
-                  titleCountStr + ' ' +
-                  title.upper() + '\n' +
+                  sectionCountStr + ' ' +
+                  section.upper() + '\n' +
                   self.HORIZONTAL_LINE)
         
         self._sectionCounter += 1
-    
-    def HorizontalLine(self):
-        print (self.HORIZONTAL_LINE)
-    
+       
     def AskYesOrNo(self, question):
         userInput=""
         print('')
@@ -57,6 +53,6 @@ class UserInterface(object):
             userInput = input(question + ' ' + YES + '/' + NO + ': >> ').lower()
         return userInput
     
-    def AskInput(self, question):
-        return input(question)
+    #def AskInput(self, question):
+    #    return input(question)
 

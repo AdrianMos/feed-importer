@@ -24,7 +24,6 @@ class Factory(object):
       
     @staticmethod
     def CreateSupplierFeedObject(objectName):
-        
         code = Factory.GetSupplierCode(objectName)
         paths = PathBuilder(code)
 
@@ -41,8 +40,8 @@ class Factory(object):
         parameters.categoryMap = parameters.ReadMapFromFile(mappingFile)
         
         try:
-            #call constructor for supplier object
-            #class name generated from objectName
+            # call constructor for supplier object
+            # class name is generated from objectName
             arguments = '(code, paths, parameters, downloader, descriptionProcessor)'
             newObject = eval(str(objectName)+ arguments)
         except Exception as ex:
